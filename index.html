@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v4.3</title>
+    <title>TripPulse v4.4</title>
     <link class="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -81,6 +81,7 @@
         .form-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
         .form-card.open .form-body { max-height: 950px; }
         .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
         .form-group { display: flex; flex-direction: column; gap: 0.2rem; }
         .form-group label { font-size: 0.62rem; font-weight: 600; color: var(--label3); text-transform: uppercase; }
         .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: none; padding: 0.6rem 0.7rem; border-radius: 8px; color: var(--label); font-size: 0.85rem; outline: none; }
@@ -140,7 +141,7 @@
         .btn-action-small { background: transparent; border: none; color: var(--label3); font-size: 0.68rem; font-weight: 500; cursor: pointer; text-decoration: underline; }
         .btn-action-small.delete-trigger { color: var(--red); }
         .btn-wa-link { background: rgba(37,211,102,0.12); color: var(--whatsapp); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
-        .btn-map-link { background: rgba(90,200,234,0.12); color: var(--teal); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .btn-map-link { background: rgba(90,200,234,0.12); color: var(--orange); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
 
         .history-card { background: var(--surface); border-radius: 14px; margin-top: 0.8rem; border: 1px dashed var(--surface3); overflow: hidden; }
         .history-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; padding: 0; }
@@ -156,7 +157,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v4.3</span></h1>
+                <h1>TripPulse <span class="version-badge">v4.4</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -304,14 +305,13 @@
             { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], hasPayment: false }
         ];
 
-        /* 🛒 DETECCION BASE LOCAL INTEGRANDO EL CHECK DE ATOMICIDAD DE MARCA DE TIEMPO */
         let isFreshInstall = !localStorage.getItem('trippulse_global_v2');
         let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
         let isSyncingLock = false;
 
         if (!globalState) {
             globalState = {
-                updatedAt: 1, // Inicialización controlada sobre cero para hidratación asíncrona
+                updatedAt: 1, 
                 activeTripId: "trip_bayahibe",
                 trips: [{
                     id: "trip_bayahibe",
@@ -606,7 +606,6 @@
             return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(milestone.address || '')}`;
         }
 
-        /* 📡 CORE DE GESTION INTEGRADO: CORRIGE EL PISADO CIEGO CON DEFENSA CONTRA JSON REMOTOS VIEJOS v4.3 */
         async function autoPullFromCloud(isForcedManual = false) {
             if(isSyncingLock && !isForcedManual) return;
             const creds = getSyncCredentials();
@@ -624,7 +623,6 @@
                         const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
                         const cloudUpdatedAt = cloudContent.updatedAt || 0;
                         
-                        /* 🛠️ HYDRATION FALLBACK DE RESCATE SI LA COLA VIENE EN BLANCO O ES PRIMER BOOTEO */
                         if(cloudUpdatedAt > globalState.updatedAt || isForcedManual || (isFreshInstall && cloudContent.trips && cloudContent.trips.length > 0)) {
                             globalState = cloudContent;
                             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
@@ -699,10 +697,10 @@
                 waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
             }
 
-            /* 📍 BOTÓN DE GOOGLE MAPS DIRECTO */
+            /* 📍 BOTÓN DE GOOGLE MAPS CORREGIDO CON STRING INTERPOLATION EN PARSEO SEGURO */
             let mapButtonHtml = '';
             if (milestone.address && milestone.address.trim() !== '') {
-                mapButtonHtml = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(milestone.address)}" target="_blank" class="btn-map-link">📍 Ver Mapa</a>`;
+                mapButtonHtml = `<a href="https://maps.google.com/?q=${encodeURIComponent(milestone.address)}" target="_blank" class="btn-map-link">📍 Ver Mapa</a>`;
             }
 
             const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
