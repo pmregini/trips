@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v3.5</title>
+    <title>TripPulse v3.6</title>
     <link class="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -154,7 +154,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v3.5</span></h1>
+                <h1>TripPulse <span class="version-badge">v3.6</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -281,8 +281,7 @@
         </div>
 
         <div class="settings-footer">
-            <span>TripPulse v3.5 • 2026 • </span>
-            <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
+            <button class="btn-text-action" style="color: var(--label3); text-decoration: underline;" onclick="forceSetupCredentials()">⚙️ Reconfigurar credenciales de la nube</button>
         </div>
     </div>
 
@@ -296,7 +295,7 @@
             { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [], hasPayment: false },
             { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", checklist: [], hasPayment: false },
             { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [], hasPayment: true },
-            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], hasPayment: false }
+            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], has roles: false }
         ];
 
         let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
@@ -321,7 +320,6 @@
         function getSyncCredentials() {
             let token = localStorage.getItem('wishlist_gh_token');
             let gistId = localStorage.getItem('wishlist_gh_gist');
-            
             if (!gistId || gistId.trim() === '') {
                 gistId = '206145949f30bf9663b1f7ba2ed4573a';
                 localStorage.setItem('wishlist_gh_gist', gistId);
@@ -382,7 +380,8 @@
         }
 
         function toggleForm() {
-            document.getElementById('formCard').classList.toggle('open');
+            const card = document.getElementById('formCard');
+            card.classList.toggle('open');
         }
 
         function updateCardCounter(cardId, amount) {
@@ -601,7 +600,6 @@
             }
         }
 
-        /* 📡 CAPA DE CONTROL DE RED HÍBRIDA INMUNIZADA PARA CORS EN SAFARI v3.5 */
         async function autoPullFromCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
@@ -610,22 +608,16 @@
             try {
                 const res = await fetch(`https://api.github.com/gists/${creds.gistId}?_cb=${Date.now()}`, {
                     method: 'GET',
-                    headers: { 
-                        'Authorization': `token ${creds.token}`
-                    }
+                    headers: { 'Authorization': `token ${creds.token}` }
                 });
                 if(res.ok) {
                     const gistData = await res.json();
                     if(gistData.files && gistData.files["travel_timeline.json"]) {
-                        try {
-                            const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
-                            if(cloudContent && Array.isArray(cloudContent.trips)) {
-                                globalState = cloudContent;
-                                localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
-                                render();
-                            }
-                        } catch(parseErr) {
-                            console.error("Payload inconsistente detectado.");
+                        const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
+                        if(cloudContent && Array.isArray(cloudContent.trips)) {
+                            globalState = cloudContent;
+                            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+                            render();
                         }
                     }
                 }
@@ -637,11 +629,10 @@
         async function autoPushToCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
-            isSyncing = true;
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
-                const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
+                await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     method: 'PATCH',
                     headers: { 
                         'Authorization': `token ${creds.token}`,
@@ -651,13 +642,9 @@
                         files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
                     })
                 });
-                if(!res.ok) console.error("Sincronización rechazada por el servidor.");
             } catch(e) { 
                 console.log("Fallo asincrónico plano mitigado.");
-            } finally { 
-                isSyncing = false;
-                if(syncBtn) syncBtn.classList.remove('spinning'); 
-            }
+            } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
         async function manualSync() {
@@ -666,13 +653,9 @@
                 forceSetupCredentials();
                 return;
             }
-            try {
-                await autoPushToCloud();
-                await autoPullFromCloud();
-                alert("🔄 Sincronización exitosa con la nube.");
-            } catch(err) {
-                alert("🔄 Estado verificado y guardado localmente.");
-            }
+            await autoPullFromCloud();
+            await autoPushToCloud();
+            alert("🔄 Sincronización exitosa con la nube.");
         }
 
         function buildMilestoneCardHtml(milestone) {
