@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v2.4</title>
+    <title>TripPulse v2.5</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -280,7 +280,7 @@
         </div>
 
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v2.4 • 2026 • </span>
+            <span>TripPulse v2.5 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
@@ -411,7 +411,6 @@
             }
         }
 
-        /* 📸 MOTOR COMPRESOR DE IMAGEN POR CANVAS PASIVO v2.4 */
         function processImageAttachment(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -421,7 +420,7 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-                        const max_size = 800; // Resolución optimizada para iPhone
+                        const max_size = 800; 
                         if (width > height) {
                             if (width > max_size) { height *= max_size / width; width = max_size; }
                         } else {
@@ -431,7 +430,7 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6)); // Compresión controlada de calidad
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                     img.src = e.target.result;
                 };
@@ -588,21 +587,31 @@
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
-                const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
-                    headers: { 'Authorization': `token ${creds.token}` }
+                // Implementación Defensiva v2.5: Cache-Busting Bypass
+                const res = await fetch(`https://api.github.com/gists/${creds.gistId}?_cb=${Date.now()}`, {
+                    headers: { 
+                        'Authorization': `token ${creds.token}`,
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    },
+                    cache: 'no-store'
                 });
                 if(res.ok) {
                     const gistData = await res.json();
                     if(gistData.files["travel_timeline.json"]) {
-                        const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
-                        if(cloudContent && Array.isArray(cloudContent.trips)) {
-                            globalState = cloudContent;
-                            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
-                            render();
+                        try {
+                            const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
+                            if(cloudContent && Array.isArray(cloudContent.trips)) {
+                                globalState = cloudContent;
+                                localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+                                render();
+                            }
+                        } catch(parseErr) {
+                            console.error("Payload corrupto o JSON inválido en la nube.", parseErr);
                         }
                     }
                 }
-            } catch(e) { console.log("Descarga pasiva abortada:", e); }
+            } catch(e) { console.log("Descarga pasiva abortada o bloqueada por red:", e); }
             finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
@@ -612,9 +621,11 @@
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
+                // Implementación Defensiva v2.5: Keep-Alive Connection
                 await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `token ${creds.token}`, 'Content-Type': 'application/json' },
+                    keepalive: true,
                     body: JSON.stringify({
                         files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
                     })
@@ -655,7 +666,6 @@
                 ? `<div style="font-size: 0.74rem; color:var(--orange); font-weight:700; background: var(--surface2); padding: 0.35rem 0.55rem; border-radius: 6px; display: inline-block;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</div>` 
                 : '';
 
-            /* 📸 INYECCIÓN DE LA IMAGEN EN LOS DETALLES v2.4 */
             let notesHtml = '';
             if (notesText.trim() || milestone.image) {
                 notesHtml = `
