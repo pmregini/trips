@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v2.2</title>
+    <title>TripPulse v2.3</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -55,7 +55,7 @@
         .collapsible-title { font-size: 0.75rem; font-weight: 700; color: var(--label); text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 0.3rem; }
         .collapsible-panel .chevron { font-size: 0.65rem; color: var(--label3); transition: transform 0.23s; }
         .collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
-        .collapsible-panel.open .collapsible-body { max-height: 400px; }
+        .collapsible-panel.open .collapsible-body { max-height: 500px; }
         .collapsible-panel.open .chevron { transform: rotate(180deg); }
         .collapsible-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
 
@@ -117,7 +117,6 @@
         .card-main-title { font-size: 0.92rem; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .res-code { font-family: monospace; font-size: 0.78rem; background: var(--surface2); padding: 0.05rem 0.35rem; border-radius: 4px; color: var(--green); font-weight: 700; letter-spacing: 0.04em; }
 
-        /* Estructura CSS de Notas Colapsables v2.2 */
         .notes-dropdown { margin-top: 0.1rem; font-size: 0.76rem; }
         .notes-summary { color: var(--accent); font-weight: 600; cursor: pointer; outline: none; list-style: none; display: inline-flex; align-items: center; gap: 0.2rem; }
         .notes-summary::-webkit-details-marker { display: none; }
@@ -237,15 +236,23 @@
                             <input type="time" id="fTime">
                         </div>
                     </div>
+                    <!-- Formulario de Configuración de Carga y Pago v2.3 -->
                     <div class="row-inputs">
                         <div class="form-group">
                             <label>Código Reserva (opcional)</label>
                             <input type="text" id="fCode">
                         </div>
                         <div class="form-group">
-                            <label>Monto a pagar allá (USD)</label>
-                            <input type="number" id="fCost" placeholder="0.00" step="0.01">
+                            <label>¿Tiene pago allá?</label>
+                            <select id="fHasPayment" onchange="document.getElementById('fCostContainer').style.display = this.value === 'yes' ? 'flex' : 'none'">
+                                <option value="no">No requiere pago allá</option>
+                                <option value="yes">Sí, requiere pago allá</option>
+                            </select>
                         </div>
+                    </div>
+                    <div class="form-group" id="fCostContainer" style="display: none;">
+                        <label>Monto a pagar allá (USD)</label>
+                        <input type="number" id="fCost" placeholder="0.00" step="0.01" value="0">
                     </div>
                     <div class="form-group">
                         <label>Notas / Detalles</label>
@@ -269,24 +276,23 @@
             </div>
         </div>
 
-        <!-- Panel de Configuración e Identificadores Camuflados v2.2 -->
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v2.2 • 2026 • </span>
+            <span>TripPulse v2.3 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
 
     <script>
         const LEGACY_SEED = [
-            { id: "m1", type: "pass", title: "Fast Pass Migraciones", date: "2026-07-17", time: "14:15", code: "", cost: 0, notes: "Hora reservada confirmada para evitar colas de salida.", checklist: [{text:"Llevar QR impreso", done:false}] },
-            { id: "m2", type: "flight", title: "Vuelo Jetsmart JA 732 (AEP -> SCL)", date: "2026-07-17", time: "16:30", code: "GEB5VX", cost: 0, notes: "Llega 17:46. Equipaje permitido: 1 valija de ida.", checklist: [{text:"Hacer check-in 24hs antes", done:true}, {text:"Pesar mochila de mano", done:false}] },
-            { id: "m3", type: "flight", title: "Vuelo Arajet (SCL -> PUJ)", date: "2026-07-18", time: "00:01", code: "VNLKSD", cost: 0, notes: "Llega 08:01am a Punta Cana. Equipaje: 3 valijas totales permitidas.", checklist: [] },
-            { id: "m4", type: "transfer", title: "Dominican Transfer al Hotel (Bayahibe)", date: "2026-07-18", time: "08:30", code: "", cost: 150, notes: "Contacto WhatsApp: +18299174178. Costo: USD 150 a pagar en efectivo.", checklist: [{text:"Cambiar billetes chicos de USD", done:false}] },
-            { id: "m5", type: "hotel", title: "Reserva Hotel Bayahibe (Deluxe Tropical)", date: "2026-07-18", time: "15:00", code: "hft6wp2uw", cost: 0, notes: "Salida: 30/07/2026. Regimen Todo Incluido. Ya se encuentra pago por completo (USD 2,508.00).", checklist: [] },
-            { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [] },
-            { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", checklist: [] },
-            { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [] },
-            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [] }
+            { id: "m1", type: "pass", title: "Fast Pass Migraciones", date: "2026-07-17", time: "14:15", code: "", cost: 0, notes: "Hora reservada confirmada para evitar colas de salida.", checklist: [{text:"Llevar QR impreso", done:false}], hasPayment: false },
+            { id: "m2", type: "flight", title: "Vuelo Jetsmart JA 732 (AEP -> SCL)", date: "2026-07-17", time: "16:30", code: "GEB5VX", cost: 0, notes: "Llega 17:46. Equipaje permitido: 1 valija de ida.", checklist: [{text:"Hacer check-in 24hs antes", done:true}, {text:"Pesar mochila de mano", done:false}], hasPayment: false },
+            { id: "m3", type: "flight", title: "Vuelo Arajet (SCL -> PUJ)", date: "2026-07-18", time: "00:01", code: "VNLKSD", cost: 0, notes: "Llega 08:01am a Punta Cana. Equipaje: 3 valijas totales permitidas.", checklist: [], hasPayment: false },
+            { id: "m4", type: "transfer", title: "Dominican Transfer al Hotel (Bayahibe)", date: "2026-07-18", time: "08:30", code: "", cost: 150, notes: "Contacto WhatsApp: +18299174178. Costo: USD 150 a pagar en efectivo.", checklist: [{text:"Cambiar billetes chicos de USD", done:false}], hasPayment: true },
+            { id: "m5", type: "hotel", title: "Reserva Hotel Bayahibe (Deluxe Tropical)", date: "2026-07-18", time: "15:00", code: "hft6wp2uw", cost: 0, notes: "Salida: 30/07/2026. Regimen Todo Incluido. Ya se encuentra pago por completo (USD 2,508.00).", checklist: [], hasPayment: false },
+            { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [], hasPayment: false },
+            { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", checklist: [], hasPayment: false },
+            { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [], hasPayment: true },
+            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], hasPayment: false }
         ];
 
         let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
@@ -302,7 +308,7 @@
                         { id: "c2", name: "Visa Signature Galicia", passes: 4 }
                     ],
                     insurance: { provider: "Universal Assistance", coverage: "17 Jul - 04 Ago / Global", notes: "Llevar vouchers digitales a mano." },
-                    milestones: LEGACY_SEED.map(m => ({ ...m, passed: false }))
+                    milestones: LEGACY_SEED
                 }]
             };
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
@@ -373,6 +379,16 @@
             }
         }
 
+        /* 🗑️ ELIMINADOR DE TARJETAS EN CALIENTE v2.3 */
+        function deleteCardInline(cardId) {
+            const trip = getActiveTrip();
+            const card = trip.cards.find(c => c.id === cardId);
+            if (card && confirm(`¿Seguro que querés eliminar la tarjeta "${card.name}"?`)) {
+                trip.cards = trip.cards.filter(c => c.id !== cardId);
+                save();
+            }
+        }
+
         function addNewCardInline() {
             const name = prompt("Nombre o Banco de la nueva tarjeta:");
             if(!name || !name.trim()) return;
@@ -399,7 +415,8 @@
             const date = document.getElementById('fDate').value;
             const time = document.getElementById('fTime').value || "12:00";
             const code = document.getElementById('fCode').value.trim();
-            const cost = parseFloat(document.getElementById('fCost').value) || 0;
+            const hasPayment = document.getElementById('fHasPayment').value === 'yes';
+            const cost = hasPayment ? (parseFloat(document.getElementById('fCost').value) || 0) : 0;
             const notes = document.getElementById('fNotes').value.trim();
 
             if (!title || !date) {
@@ -410,13 +427,15 @@
             const trip = getActiveTrip();
             trip.milestones.push({
                 id: 'm_' + Date.now(),
-                type, title, date, time, code, cost, notes, passed: false,
+                type, title, date, time, code, cost, notes, passed: false, hasPayment,
                 checklist: []
             });
 
             document.getElementById('fTitle').value = '';
             document.getElementById('fCode').value = '';
-            document.getElementById('fCost').value = '';
+            document.getElementById('fCost').value = '0';
+            document.getElementById('fHasPayment').value = 'no';
+            document.getElementById('fCostContainer').style.display = 'none';
             document.getElementById('fNotes').value = '';
             
             toggleForm();
@@ -486,16 +505,14 @@
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        /* 🔥 MOTOR WEB INTENT DE CALENDARIO GOOGLE v2.2 */
         function getGoogleCalendarUrl(milestone) {
             const base = "https://calendar.google.com/calendar/render?action=TEMPLATE";
             const title = `TripPulse [${milestone.type.toUpperCase()}]: ${milestone.title}`;
-            
             const cleanDate = milestone.date.replace(/-/g, '');
             const cleanTime = milestone.time.replace(/:/g, '');
             const startStr = `${cleanDate}T${cleanTime}00`;
             
-            let hour = parseInt(milestone.time.split('_')[0]) + 1;
+            let hour = parseInt(milestone.time.split(':')[0]) + 1;
             if (isNaN(hour) || hour >= 24) hour = 12;
             const endStr = `${cleanDate}T${String(hour).padStart(2, '0')}0000`;
             
@@ -588,11 +605,12 @@
                 waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
             }
 
-            const costHtml = milestone.cost > 0 
+            /* 💰 EVALUADOR EXPLICITO DE PAGO REGISTRADO v2.3 */
+            const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
+            const costHtml = hasPay 
                 ? `<div style="font-size: 0.74rem; color:var(--orange); font-weight:700; background: var(--surface2); padding: 0.35rem 0.55rem; border-radius: 6px; display: inline-block;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</div>` 
-                : `<div style="font-size: 0.74rem; color:var(--green); background: var(--surface2); padding: 0.35rem 0.55rem; border-radius: 6px; display: inline-block;">🟢 Sin pagos pendientes</div>`;
+                : ''; // Si no tiene pago asignado explícitamente se suprime el badge por completo
 
-            /* 📝 CONTRALOR LOGICO DE DESPLEGABLE CON INDICADOR EN SUMMARY v2.2 */
             let notesHtml = '';
             if (notesText.trim()) {
                 notesHtml = `
@@ -660,6 +678,7 @@
             document.getElementById('insCoverage').textContent = trip.insurance.coverage || "Sin registrar";
             document.getElementById('insNotes').textContent = trip.insurance.notes || "No hay observaciones extras.";
 
+            /* 🗑️ INYECCIÓN DINÁMICA DEL BOTÓN DE ELIMINACIÓN DE TARJETA v2.3 */
             const cardBox = document.getElementById('vipCardsContainer');
             cardBox.innerHTML = trip.cards.map(c => `
                 <div class="card-row-item">
@@ -668,6 +687,7 @@
                         <button class="btn-counter-small" onclick="updateCardCounter('${c.id}', -1)">-</button>
                         <span class="card-row-counter">${c.passes}</span>
                         <button class="btn-counter-small" onclick="updateCardCounter('${c.id}', 1)">+</button>
+                        <button class="btn-counter-small" style="background:rgba(255,69,58,0.12); color:var(--red);" onclick="deleteCardInline('${c.id}')">🗑️</button>
                     </div>
                 </div>
             `).join('') + `<button class="btn-add-card-inline" onclick="addNewCardInline()">＋ Enlazar nueva tarjeta / pase</button>`;
@@ -689,8 +709,12 @@
                 card.className = `timeline-card is-${milestone.type} ${milestone.passed ? 'passed-milestone' : ''}`;
                 card.innerHTML = buildMilestoneCardHtml(milestone);
 
+                const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
+
                 if (!milestone.passed) {
-                    totalPendingPay += milestone.cost;
+                    if (hasPay) {
+                        totalPendingPay += milestone.cost;
+                    }
                     activeContainer.appendChild(card);
                     activeCount++;
                 } else {
