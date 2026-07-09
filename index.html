@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v2.6</title>
+    <title>TripPulse v2.8</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -36,9 +36,9 @@
 
         .container { max-width: 500px; margin: 0 auto; }
 
-        header { padding: 0.3rem 0.1rem 0.9rem 0.1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
-        h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
-        .subtitle { color: var(--label2); font-size: 0.8rem; margin-top: 0.1rem; font-weight: 400; }
+        header { padding: 0.3rem 0.1rem 0.6rem 0.1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.35rem; }
+        .version-badge { font-size: 0.68rem; font-weight: 600; color: var(--label3); background: var(--surface2); padding: 0.1rem 0.35rem; border-radius: 5px; border: 1px solid var(--surface3); }
         
         .trip-manager-bar { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; background: var(--surface); padding: 0.4rem; border-radius: 12px; align-items: center; }
         .trip-select { flex: 1; background: var(--surface2); border: none; color: var(--label); padding: 0.45rem 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; outline: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2398989d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
@@ -52,8 +52,8 @@
         .budget-bar .value { font-size: 1.1rem; font-weight: 700; color: var(--orange); font-variant-numeric: tabular-nums; }
 
         .collapsible-panel { background: var(--surface2); border: 1px solid var(--surface3); border-radius: 14px; margin-bottom: 0.45rem; overflow: hidden; }
-        .collapsible-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.9rem; cursor: pointer; gap: 0.5rem; }
-        .collapsible-title { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; font-weight: 700; color: var(--label); text-transform: uppercase; letter-spacing: 0.03em; }
+        .collapsible-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.9rem; cursor: pointer; }
+        .collapsible-title { font-size: 0.75rem; font-weight: 700; color: var(--label); text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 0.3rem; }
         .collapsible-panel .chevron { font-size: 0.65rem; color: var(--label3); transition: transform 0.23s; }
         .collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
         .collapsible-panel.open .collapsible-body { max-height: 500px; }
@@ -65,7 +65,7 @@
         .insurance-item span:first-child { color: var(--label2); font-size: 0.62rem; }
         .insurance-item span:last-child { font-weight: 600; }
 
-        .card-row-item { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 0.45rem 0.6...rem; border-radius: 9px; border-left: 3px solid var(--teal); }
+        .card-row-item { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 0.45rem 0.6rem; border-radius: 9px; border-left: 3px solid var(--teal); }
         .card-row-name { font-size: 0.85rem; font-weight: 600; }
         .card-row-controls { display: flex; align-items: center; gap: 0.45rem; }
         .card-row-counter { font-size: 0.95rem; font-weight: 700; min-width: 1.2rem; text-align: center; font-variant-numeric: tabular-nums; }
@@ -87,18 +87,19 @@
         .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
         .btn-add { background: var(--accent); color: white; border: none; padding: 0.75rem; border-radius: 10px; font-weight: 700; font-size: 0.88rem; margin-top: 0.2rem; cursor: pointer; }
 
-        /* TIMELINE ENGINE */
+        /* TIMELINE ENGINE WITH RESPONSIVE PATCHES */
         .timeline-container { position: relative; padding-left: 1.1rem; margin-top: 0.3rem; }
         .timeline-container::before { content: ''; position: absolute; top: 0.4rem; bottom: 0.4rem; left: 4.5px; width: 2px; background: var(--surface3); }
 
         .timeline-card { background: var(--surface); border-radius: 14px; padding: 0.7rem 0.85rem; margin-bottom: 0.5rem; position: relative; display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid rgba(255,255,255,0.02); }
-        .timeline-card::before { content: ''; position: absolute; top: 0.9rem; left: calc(-1.1rem - 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--bg); z-index: 2; }
+        .timeline-card::before { content: ''; position: absolute; top: 1.1rem; left: calc(-1.1rem - 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--bg); z-index: 2; }
         .timeline-card.is-flight::before { background: var(--accent); }
         .timeline-card.is-hotel::before { background: var(--purple); }
         .timeline-card.is-transfer::before { background: var(--orange); }
         .timeline-card.is-pass::before { background: var(--teal); }
 
-        .btn-milestone-check { background: transparent; border: 2px solid var(--label3); width: 18px; height: 18px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; }
+        .card-title-row { display: flex; align-items: flex-start; gap: 0.55rem; min-width: 0; width: 100%; }
+        .btn-milestone-check { background: transparent; border: 2px solid var(--label3); width: 18px; height: 18px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; margin-top: 2px; }
         .btn-milestone-check svg { width: 10px; height: 10px; stroke: white; stroke-width: 3.5; fill: none; display: none; }
         .timeline-card.passed-milestone .btn-milestone-check { background: var(--green); border-color: var(--green); }
         .timeline-card.passed-milestone .btn-milestone-check svg { display: block; }
@@ -114,9 +115,8 @@
         .is-pass .type-badge { background: rgba(90,200,234,0.15); color: #7fd6ef; }
         .is-custom .type-badge { background: var(--surface2); color: var(--label2); }
 
-        .card-title-row { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
-        .card-main-title { font-size: 0.92rem; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .res-code { font-family: monospace; font-size: 0.78rem; background: var(--surface2); padding: 0.05rem 0.35rem; border-radius: 4px; color: var(--green); font-weight: 700; letter-spacing: 0.04em; }
+        .card-main-title { font-size: 0.92rem; font-weight: 600; line-height: 1.25; color: var(--label); word-break: break-word; }
+        .res-code { font-family: monospace; font-size: 0.78rem; background: var(--surface2); padding: 0.1rem 0.4rem; border-radius: 4px; color: var(--green); font-weight: 700; letter-spacing: 0.04em; display: inline-block; }
 
         .notes-dropdown { margin-top: 0.1rem; font-size: 0.76rem; }
         .notes-summary { color: var(--accent); font-weight: 600; cursor: pointer; outline: none; list-style: none; display: inline-flex; align-items: center; gap: 0.2rem; }
@@ -154,7 +154,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse</h1>
+                <h1>TripPulse <span class="version-badge">v2.8</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -219,7 +219,7 @@
                                 <option value="hotel">🏨 Alojamiento</option>
                                 <option value="transfer">🚗 Traslado / Conexión</option>
                                 <option value="pass">🎫 Pase / Acceso Especial</option>
-                                <option value="custom">📌 Recordatorio / Tarea</option>
+                                <option value="custom" selected>📌 Recordatorio / Tarea</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -281,7 +281,7 @@
         </div>
 
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v2.6 • 2026 • </span>
+            <span>TripPulse v2.8 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
@@ -504,7 +504,6 @@
             }
         }
 
-        /* 🔥 MODIFICADOR DE NOTAS INLINE v2.6 */
         function editMilestoneNotes(id) {
             const trip = getActiveTrip();
             const milestone = trip.milestones.find(m => m.id === id);
@@ -646,9 +645,16 @@
             finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
+        /* 🔄 COMPORTAMIENTO DE MANUAl SYNC CORREGIDO PARA SAFARI / iPHONE v2.8 */
         async function manualSync() {
+            const creds = getSyncCredentials();
+            if(!creds.token || !creds.gistId) {
+                forceSetupCredentials();
+                return;
+            }
             await autoPullFromCloud();
             await autoPushToCloud();
+            alert("🔄 Sincronización exitosa con GitHub Cloud.");
         }
 
         function buildMilestoneCardHtml(milestone) {
@@ -699,18 +705,29 @@
 
             const googleCalUrl = getGoogleCalendarUrl(milestone);
 
+            /* 🎫 DICCIONARIO DE TRADUCCIÓN REACTIVA PARA EVITAR TAGS INTERNOS v2.8 */
+            const typeLabels = {
+                flight: "✈️ Vuelo",
+                hotel: "🏨 Alojamiento",
+                transfer: "🚗 Traslado",
+                pass: "🎫 Pase",
+                custom: "📌 Recordatorio"
+            };
+            const displayType = typeLabels[milestone.type] || milestone.type;
+
+            /* 📱 AJUSTE ESTRUCTURAL RESPONSIVE: CÓDIGO DE RESERVA ABAJO DEL TÍTULO v2.8 */
             return `
                 <div class="card-meta-row">
                     <span class="datetime-stamp">${formatDisplayDate(milestone.date)} — ${milestone.time} hs</span>
-                    <span class="type-badge">${milestone.type}</span>
+                    <span class="type-badge">${displayType}</span>
                 </div>
                 <div class="card-title-row">
                     <button class="btn-milestone-check" onclick="toggleMilestonePassed('${milestone.id}')" title="Archivar Hito Pasado">
                         <svg viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
                     </button>
-                    <div class="card-main-title">
-                        ${milestone.title}
-                        ${milestone.code ? `<span class="res-code">${milestone.code}</span>` : ''}
+                    <div style="min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div class="card-main-title">${milestone.title}</div>
+                        ${milestone.code ? `<div><span class="res-code">${milestone.code}</span></div>` : ''}
                     </div>
                 </div>
                 
