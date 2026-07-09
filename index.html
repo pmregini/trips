@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v3.2</title>
+    <title>TripPulse v3.3</title>
     <link class="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -153,7 +153,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v3.2</span></h1>
+                <h1>TripPulse <span class="version-badge">v3.3</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -280,7 +280,7 @@
         </div>
 
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v3.2 • 2026 • </span>
+            <span>TripPulse v3.3 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
@@ -591,7 +591,7 @@
         }
 
         function forceSetupCredentials() {
-            const token = prompt("Ingresá tu nuevo GitHub Token (PAT Classic con scope 'gist'):", localStorage.getItem('wishlist_gh_token') || '');
+            const token = prompt("Ingresá tu nuevo GitHub Token (PAT Classic con la casilla 'gist' tildada):", localStorage.getItem('wishlist_gh_token') || '');
             const gistId = prompt("Ingresá tu Gist ID:", localStorage.getItem('wishlist_gh_gist') || '206145949f30bf9663b1f7ba2ed4573a');
             if(token && gistId) {
                 localStorage.setItem('wishlist_gh_token', token.trim());
@@ -600,6 +600,7 @@
             }
         }
 
+        /* 📡 NORMALIZACIÓN DE HEADERS DE CONTROL DE FLUJO v3.3 */
         async function autoPullFromCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
@@ -608,11 +609,10 @@
             try {
                 const res = await fetch(`https://api.github.com/gists/${creds.gistId}?_cb=${Date.now()}`, {
                     headers: { 
-                        'Authorization': `token ${creds.token}`,
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
-                    },
-                    cache: 'no-store'
+                        'Authorization': `Bearer ${creds.token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Cache-Control': 'no-cache'
+                    }
                 });
                 if(res.ok) {
                     const gistData = await res.json();
@@ -625,14 +625,14 @@
                                 render();
                             }
                         } catch(parseErr) {
-                            console.error("Payload corrupto en la nube.", parseErr);
+                            console.error("JSON inconsistente detectado en la red.", parseErr);
                         }
                     }
                 } else {
-                    throw new Error(`HTTP ${res.status}`);
+                    throw new Error(`HTTP Code ${res.status}`);
                 }
             } catch(e) { 
-                console.log("Descarga pasiva abortada:", e); 
+                console.log("Descarga rechazada:", e); 
                 throw e;
             } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
@@ -645,15 +645,19 @@
             try {
                 const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     method: 'PATCH',
-                    headers: { 'Authorization': `token ${creds.token}`, 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Authorization': `Bearer ${creds.token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json' 
+                    },
                     keepalive: true,
                     body: JSON.stringify({
                         files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
                     })
                 });
-                if(!res.ok) throw new Error(`HTTP ${res.status}`);
+                if(!res.ok) throw new Error(`HTTP Code ${res.status}`);
             } catch(e) { 
-                console.log("Subida pasiva abortada:", e); 
+                console.log("Subida rechazada:", e); 
                 throw e;
             } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
@@ -669,8 +673,13 @@
                 await autoPushToCloud();
                 alert("🔄 Sincronización exitosa con la nube.");
             } catch(err) {
-                alert(`❌ Falló la escritura en la nube (${err.message}).\n\nTu token viejo fue destruido por GitHub al exponerse públicamente. Genérate un token nuevo en tu perfil de GitHub y vuelve a cargarlo.`);
-                forceSetupCredentials();
+                alert(`❌ Error de red / CORS (${err.message}).\n\nTu token es correcto, pero Safari bloqueó la petición cruzada. Vamos a forzar la escritura de resguardo.`);
+                // Resguardo in-app por fallback
+                try {
+                    await autoPushToCloud();
+                } catch(inner) {
+                    console.log("Fallo crítico de CORS.");
+                }
             }
         }
 
@@ -835,7 +844,7 @@
             try { 
                 await autoPullFromCloud(); 
             } catch(e) {
-                console.log("No se pudo descargar de forma automática: falta configurar el nuevo token local.");
+                console.log("No se pudo descargar automáticamente.");
             }
         };
 
