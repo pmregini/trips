@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v2.3</title>
+    <title>TripPulse v2.4</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -236,7 +236,6 @@
                             <input type="time" id="fTime">
                         </div>
                     </div>
-                    <!-- Formulario de Configuración de Carga y Pago v2.3 -->
                     <div class="row-inputs">
                         <div class="form-group">
                             <label>Código Reserva (opcional)</label>
@@ -245,7 +244,7 @@
                         <div class="form-group">
                             <label>¿Tiene pago allá?</label>
                             <select id="fHasPayment" onchange="document.getElementById('fCostContainer').style.display = this.value === 'yes' ? 'flex' : 'none'">
-                                <option value="no">No requiere pago allá</option>
+                                <option value="no" selected>No requiere pago allá</option>
                                 <option value="yes">Sí, requiere pago allá</option>
                             </select>
                         </div>
@@ -255,10 +254,14 @@
                         <input type="number" id="fCost" placeholder="0.00" step="0.01" value="0">
                     </div>
                     <div class="form-group">
+                        <label>📸 Adjuntar Foto o Comprobante (Opcional)</label>
+                        <input type="file" id="fMedia" accept="image/*" style="background:transparent; padding:0;">
+                    </div>
+                    <div class="form-group">
                         <label>Notas / Detalles</label>
                         <textarea id="fNotes" rows="2"></textarea>
                     </div>
-                    <button class="btn-add" onclick="addMilestone()">Insertar en Itinerario</button>
+                    <button class="btn-add" id="btnAddMilestone" onclick="addMilestone()">Insertar en Itinerario</button>
                 </div>
             </div>
         </div>
@@ -277,7 +280,7 @@
         </div>
 
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v2.3 • 2026 • </span>
+            <span>TripPulse v2.4 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
@@ -379,7 +382,6 @@
             }
         }
 
-        /* 🗑️ ELIMINADOR DE TARJETAS EN CALIENTE v2.3 */
         function deleteCardInline(cardId) {
             const trip = getActiveTrip();
             const card = trip.cards.find(c => c.id === cardId);
@@ -409,7 +411,35 @@
             }
         }
 
-        function addMilestone() {
+        /* 📸 MOTOR COMPRESOR DE IMAGEN POR CANVAS PASIVO v2.4 */
+        function processImageAttachment(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const max_size = 800; // Resolución optimizada para iPhone
+                        if (width > height) {
+                            if (width > max_size) { height *= max_size / width; width = max_size; }
+                        } else {
+                            if (height > max_size) { width *= max_size / height; height = max_size; }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6)); // Compresión controlada de calidad
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function addMilestone() {
             const type = document.getElementById('fType').value;
             const title = document.getElementById('fTitle').value.trim();
             const date = document.getElementById('fDate').value;
@@ -418,16 +448,27 @@
             const hasPayment = document.getElementById('fHasPayment').value === 'yes';
             const cost = hasPayment ? (parseFloat(document.getElementById('fCost').value) || 0) : 0;
             const notes = document.getElementById('fNotes').value.trim();
+            const fileInput = document.getElementById('fMedia');
 
             if (!title || !date) {
                 alert("Por favor completá el título y la fecha del hito.");
                 return;
             }
 
+            const btn = document.getElementById('btnAddMilestone');
+            btn.disabled = true;
+            btn.textContent = "Procesando Adjunto...";
+
+            let compressedImage = "";
+            if(fileInput.files && fileInput.files[0]) {
+                compressedImage = await processImageAttachment(fileInput.files[0]);
+            }
+
             const trip = getActiveTrip();
             trip.milestones.push({
                 id: 'm_' + Date.now(),
                 type, title, date, time, code, cost, notes, passed: false, hasPayment,
+                image: compressedImage,
                 checklist: []
             });
 
@@ -437,6 +478,10 @@
             document.getElementById('fHasPayment').value = 'no';
             document.getElementById('fCostContainer').style.display = 'none';
             document.getElementById('fNotes').value = '';
+            document.getElementById('fMedia').value = '';
+            
+            btn.disabled = false;
+            btn.textContent = "Insertar en Itinerario";
             
             toggleForm();
             save();
@@ -605,24 +650,27 @@
                 waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
             }
 
-            /* 💰 EVALUADOR EXPLICITO DE PAGO REGISTRADO v2.3 */
             const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
             const costHtml = hasPay 
                 ? `<div style="font-size: 0.74rem; color:var(--orange); font-weight:700; background: var(--surface2); padding: 0.35rem 0.55rem; border-radius: 6px; display: inline-block;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</div>` 
-                : ''; // Si no tiene pago asignado explícitamente se suprime el badge por completo
+                : '';
 
+            /* 📸 INYECCIÓN DE LA IMAGEN EN LOS DETALLES v2.4 */
             let notesHtml = '';
-            if (notesText.trim()) {
+            if (notesText.trim() || milestone.image) {
                 notesHtml = `
                     <details class="notes-dropdown">
-                        <summary class="notes-summary">📝 Ver Notas</summary>
-                        <div class="notes-content">${milestone.notes}</div>
+                        <summary class="notes-summary">📝 Ver Notas / Adjunto</summary>
+                        <div class="notes-content">
+                            ${notesText ? `<p style="margin-bottom: 0.4rem;">${notesText}</p>` : ''}
+                            ${milestone.image ? `<div style="text-align:center; margin-top:0.4rem;"><img src="${milestone.image}" style="max-width:100%; border-radius:8px; border:1px solid var(--surface3);" alt="Comprobante"></div>` : ''}
+                        </div>
                     </details>
                 `;
             } else {
                 notesHtml = `
                     <div class="notes-dropdown dimmed-dropdown">
-                        <span class="notes-summary">📝 Sin notas</span>
+                        <span class="notes-summary">📝 Sin notas ni adjuntos</span>
                     </div>
                 `;
             }
@@ -678,7 +726,6 @@
             document.getElementById('insCoverage').textContent = trip.insurance.coverage || "Sin registrar";
             document.getElementById('insNotes').textContent = trip.insurance.notes || "No hay observaciones extras.";
 
-            /* 🗑️ INYECCIÓN DINÁMICA DEL BOTÓN DE ELIMINACIÓN DE TARJETA v2.3 */
             const cardBox = document.getElementById('vipCardsContainer');
             cardBox.innerHTML = trip.cards.map(c => `
                 <div class="card-row-item">
