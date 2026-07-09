@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v1.0</title>
+    <title>TripPulse v2.0</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,6 +23,7 @@
             --red: #ff453a;
             --purple: #bf5af2;
             --teal: #5ac8ea;
+            --whatsapp: #25d366;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         html { -webkit-font-smoothing: antialiased; }
@@ -35,97 +36,109 @@
 
         .container { max-width: 500px; margin: 0 auto; }
 
-        header { padding: 0.3rem 0.1rem 0.9rem 0.1rem; display: flex; justify-content: space-between; align-items: flex-start; }
-        h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
-        .subtitle { color: var(--label2); font-size: 0.8rem; margin-top: 0.1rem; font-weight: 400; }
+        header { padding: 0.3rem 0.1rem 0.6rem 0.1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+        
+        .top-controls { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.2rem; }
+        
+        /* Selectores de Viaje */
+        .trip-manager-bar { display: flex; gap: 0.4rem; margin-bottom: 0.8rem; background: var(--surface); padding: 0.4rem; border-radius: 12px; align-items: center; }
+        .trip-select { flex: 1; background: var(--surface2); border: none; color: var(--label); padding: 0.45rem 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; outline: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2398989d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
+        .btn-text-action { background: transparent; border: none; color: var(--accent); font-weight: 600; font-size: 0.82rem; cursor: pointer; padding: 0.2rem 0.4rem; }
 
-        .btn-cloud-sync { background: var(--surface2); border: 1px solid var(--surface3); color: var(--purple); width: 38px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .btn-cloud-sync { background: var(--surface2); border: 1px solid var(--surface3); color: var(--purple); width: 36px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
         .btn-cloud-sync.spinning { animation: spin 0.8s linear infinite; color: var(--green); }
 
-        /* Widget de Control Superior */
         .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem; }
-        .metric-box { background: var(--surface); border-radius: 14px; padding: 0.7rem 0.9rem; display: flex; flex-direction: column; gap: 0.15rem; }
-        .metric-box label { font-size: 0.65rem; color: var(--label3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
-        .metric-box .value { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .metric-box { background: var(--surface); border-radius: 14px; padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.1rem; }
+        .metric-box label { font-size: 0.62rem; color: var(--label3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+        .metric-box .value { font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
         .metric-box .value.pending-pay { color: var(--orange); }
-        .metric-box .counter-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; }
-        .btn-counter { background: var(--surface2); border: none; color: var(--label); font-weight: 600; font-size: 0.8rem; padding: 0.15rem 0.5rem; border-radius: 6px; cursor: pointer; }
+        .metric-box .counter-actions { display: flex; gap: 0.4rem; margin-top: 0.15rem; }
+        .btn-counter { background: var(--surface2); border: none; color: var(--label); font-weight: 600; font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 5px; cursor: pointer; }
 
-        /* Tarjeta de Seguro Médico */
-        .insurance-card { background: linear-gradient(135deg, #11253c, #1c1c1e); border: 1px solid rgba(90,200,234,0.2); border-radius: 16px; padding: 0.8rem 1rem; margin-bottom: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; }
-        .insurance-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.3rem; }
-        .insurance-title { font-size: 0.82rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.04em; }
-        .insurance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem; }
+        .insurance-card { background: linear-gradient(135deg, #11253c, #1c1c1e); border: 1px solid rgba(90,200,234,0.15); border-radius: 14px; padding: 0.75rem 0.9rem; margin-bottom: 0.6rem; display: flex; flex-direction: column; gap: 0.35rem; }
+        .insurance-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.25rem; }
+        .insurance-title { font-size: 0.78rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.04em; }
+        .insurance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.78rem; }
         .insurance-item { display: flex; flex-direction: column; }
-        .insurance-item span:first-child { color: var(--label2); font-size: 0.65rem; }
+        .insurance-item span:first-child { color: var(--label2); font-size: 0.62rem; }
         .insurance-item span:last-child { font-weight: 600; }
+        .insurance-notes { font-size: 0.7rem; color: var(--label2); line-height: 1.25; }
 
-        .section-label { font-size: 0.7rem; font-weight: 600; color: var(--label3); text-transform: uppercase; letter-spacing: 0.04em; margin: 1.2rem 0 0.4rem 0.2rem; }
+        .section-label { font-size: 0.68rem; font-weight: 600; color: var(--label3); text-transform: uppercase; letter-spacing: 0.04em; margin: 1rem 0 0.4rem 0.1rem; }
 
-        /* Formulario Colapsable */
-        .form-card { background: var(--surface); border-radius: 16px; margin-bottom: 0.5rem; overflow: hidden; border: 1px solid var(--separator); }
-        .form-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; cursor: pointer; }
-        .form-toggle-row .label { font-weight: 700; font-size: 0.88rem; color: var(--label); display: flex; align-items: center; gap: 0.4rem; }
+        .form-card { background: var(--surface); border-radius: 14px; margin-bottom: 0.45rem; overflow: hidden; border: 1px solid var(--separator); }
+        .form-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.9rem; cursor: pointer; }
+        .form-toggle-row .label { font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
         .form-card.open .chevron { transform: rotate(180deg); }
         .form-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
         .form-card.open .form-body { max-height: 950px; }
-        .form-body-inner { padding: 0.1rem 1rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.25rem; }
-        .form-group label { font-size: 0.65rem; font-weight: 600; color: var(--label3); text-transform: uppercase; }
-        .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: none; padding: 0.65rem 0.75rem; border-radius: 9px; color: var(--label); font-size: 0.9rem; outline: none; }
-        .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-        .btn-add { background: var(--accent); color: white; border: none; padding: 0.8rem; border-radius: 11px; font-weight: 700; font-size: 0.9rem; margin-top: 0.3rem; cursor: pointer; }
+        .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.2rem; }
+        .form-group label { font-size: 0.62rem; font-weight: 600; color: var(--label3); text-transform: uppercase; }
+        .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: none; padding: 0.6rem 0.7rem; border-radius: 8px; color: var(--label); font-size: 0.85rem; outline: none; }
+        .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+        .btn-add { background: var(--accent); color: white; border: none; padding: 0.75rem; border-radius: 10px; font-weight: 700; font-size: 0.88rem; margin-top: 0.2rem; cursor: pointer; }
 
-        /* --- DISEÑO DE TIMELINE ESTILO iIOS --- */
-        .timeline-container { position: relative; padding-left: 1.1rem; margin-top: 0.5rem; }
+        /* TIMELINE ENGINE */
+        .timeline-container { position: relative; padding-left: 1.1rem; margin-top: 0.3rem; }
         .timeline-container::before { content: ''; position: absolute; top: 0.4rem; bottom: 0.4rem; left: 4.5px; width: 2px; background: var(--surface3); }
 
-        .timeline-card { background: var(--surface); border-radius: 14px; padding: 0.75rem 0.9rem; margin-bottom: 0.6rem; position: relative; display: flex; flex-direction: column; gap: 0.45rem; border: 1px solid rgba(255,255,255,0.03); }
-        
-        /* Nodo de la línea de tiempo */
-        .timeline-card::before { content: ''; position: absolute; top: 1rem; left: calc(-1.1rem - 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--bg); z-index: 2; }
+        .timeline-card { background: var(--surface); border-radius: 14px; padding: 0.7rem 0.85rem; margin-bottom: 0.5rem; position: relative; display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid rgba(255,255,255,0.02); }
+        .timeline-card::before { content: ''; position: absolute; top: 0.9rem; left: calc(-1.1rem - 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--bg); z-index: 2; }
         .timeline-card.is-flight::before { background: var(--accent); }
         .timeline-card.is-hotel::before { background: var(--purple); }
         .timeline-card.is-transfer::before { background: var(--orange); }
         .timeline-card.is-pass::before { background: var(--teal); }
 
+        /* Botón Checkbox de Estado de Hito */
+        .btn-milestone-check { background: transparent; border: 2px solid var(--label3); width: 18px; height: 18px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; }
+        .btn-milestone-check svg { width: 10px; height: 10px; stroke: white; stroke-width: 3.5; fill: none; display: none; }
+        .timeline-card.passed-milestone .btn-milestone-check { background: var(--green); border-color: var(--green); }
+        .timeline-card.passed-milestone .btn-milestone-check svg { display: block; }
+        .timeline-card.passed-milestone { opacity: 0.5; }
+        .timeline-card.passed-milestone::before { background: var(--label3) !important; }
+
         .card-meta-row { display: flex; justify-content: space-between; align-items: center; }
-        .datetime-stamp { font-size: 0.72rem; font-weight: 700; color: var(--label2); text-transform: uppercase; }
-        
-        .type-badge { padding: 0.15rem 0.45rem; border-radius: 6px; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+        .datetime-stamp { font-size: 0.7rem; font-weight: 700; color: var(--label2); text-transform: uppercase; }
+        .type-badge { padding: 0.1rem 0.4rem; border-radius: 5px; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
         .is-flight .type-badge { background: rgba(0,122,255,0.15); color: #64b5ff; }
         .is-hotel .type-badge { background: rgba(191,90,242,0.15); color: #d493f7; }
         .is-transfer .type-badge { background: rgba(255,159,10,0.15); color: #ffb454; }
         .is-pass .type-badge { background: rgba(90,200,234,0.15); color: #7fd6ef; }
         .is-custom .type-badge { background: var(--surface2); color: var(--label2); }
 
-        .card-main-title { font-size: 0.95rem; font-weight: 600; line-height: 1.3; }
-        .res-code { font-family: monospace; font-size: 0.8rem; background: var(--surface2); padding: 0.1rem 0.4rem; border-radius: 5px; color: var(--green); font-weight: 700; margin-left: 0.3rem; letter-spacing: 0.05em; }
+        .card-title-row { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+        .card-main-title { font-size: 0.92rem; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .res-code { font-family: monospace; font-size: 0.78rem; background: var(--surface2); padding: 0.05rem 0.35rem; border-radius: 4px; color: var(--green); font-weight: 700; letter-spacing: 0.04em; }
 
-        .info-strip { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; font-size: 0.78rem; color: var(--label2); background: var(--surface2); padding: 0.4rem 0.6rem; border-radius: 8px; }
-        .info-strip span { display: flex; align-items: center; gap: 0.25rem; }
+        .info-strip { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.78rem; color: var(--label2); background: var(--surface2); padding: 0.4rem 0.55rem; border-radius: 7px; }
 
-        /* Modulo de Sub-Checklists Integrado */
-        .subchecklist-box { border-top: 1px solid var(--separator); padding-top: 0.4rem; display: flex; flex-direction: column; gap: 0.35rem; }
-        .subchecklist-title { font-size: 0.65rem; font-weight: 700; color: var(--label3); text-transform: uppercase; letter-spacing: 0.02em; display: flex; justify-content: space-between; }
-        .task-item { display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; cursor: pointer; }
-        .task-checkbox { background: transparent; border: 1.5px solid var(--label3); width: 15px; height: 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .subchecklist-box { border-top: 1px solid var(--separator); padding-top: 0.35rem; display: flex; flex-direction: column; gap: 0.3rem; }
+        .subchecklist-title { font-size: 0.62rem; font-weight: 700; color: var(--label3); text-transform: uppercase; letter-spacing: 0.02em; display: flex; justify-content: space-between; }
+        .task-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; cursor: pointer; }
+        .task-checkbox { background: transparent; border: 1.5px solid var(--label3); width: 14px; height: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .task-item.done { color: var(--label3); text-decoration: line-through; }
         .task-item.done .task-checkbox { background: var(--green); border-color: var(--green); }
         .task-checkmark { width: 8px; height: 8px; fill: white; display: none; }
         .task-item.done .task-checkmark { display: block; }
         
         .add-task-inline { display: flex; gap: 0.3rem; margin-top: 0.1rem; }
-        .add-task-inline input { flex: 1; background: var(--surface2); border: none; padding: 0.3rem 0.5rem; border-radius: 6px; color: var(--label); font-size: 0.75rem; outline: none; }
-        .add-task-inline button { background: var(--surface3); border: none; color: var(--label); font-size: 0.75rem; padding: 0 0.5rem; border-radius: 6px; font-weight: 600; }
+        .add-task-inline input { flex: 1; background: var(--surface2); border: none; padding: 0.25rem 0.45rem; border-radius: 5px; color: var(--label); font-size: 0.72rem; outline: none; }
+        .add-task-inline button { background: var(--surface3); border: none; color: var(--label); font-size: 0.72rem; padding: 0 0.45rem; border-radius: 5px; font-weight: 600; }
 
-        .card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.1rem; border-top: 1px solid rgba(255,255,255,0.02); padding-top: 0.35rem; }
-        .btn-action-small { background: transparent; border: none; color: var(--label3); font-size: 0.7rem; font-weight: 500; cursor: pointer; text-decoration: underline; }
+        .card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.1rem; border-top: 1px solid rgba(255,255,255,0.02); padding-top: 0.3rem; }
+        .btn-action-small { background: transparent; border: none; color: var(--label3); font-size: 0.68rem; font-weight: 500; cursor: pointer; text-decoration: underline; }
         .btn-action-small.delete-trigger { color: var(--red); }
-        .btn-wa-link { background: rgba(37,211,102,0.12); color: var(--whatsapp); padding: 0.2rem 0.5rem; border-radius: 5px; text-decoration: none; font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .btn-wa-link { background: rgba(37,211,102,0.12); color: var(--whatsapp); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
 
-        .settings-footer { margin-top: 3rem; text-align: center; }
-        .btn-settings-link { background: transparent; border: none; color: var(--label3); font-size: 0.72rem; text-decoration: underline; cursor: pointer; }
+        /* Historial Base */
+        .history-card { background: var(--surface); border-radius: 14px; margin-top: 0.8rem; border: 1px dashed var(--surface3); overflow: hidden; }
+        .history-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; padding: 0; }
+        .history-card.open .history-body { max-height: 2000px; padding: 0.2rem 0.8rem 0.8rem 0.8rem; }
+
+        .empty-state { text-align: center; color: var(--label3); padding: 2.5rem 1rem; font-size: 0.82rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -134,10 +147,16 @@
         <header>
             <div>
                 <h1>TripPulse</h1>
-                <div class="subtitle">Timeline & Dependencias de Viaje</div>
+                <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
-            <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()" title="Sincronizar Itinerario">🔄</button>
+            <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
         </header>
+
+        <div class="trip-manager-bar">
+            <select class="trip-select" id="tripSelector" onchange="changeTripContext(this.value)"></select>
+            <button class="btn-text-action" onclick="createNewTripContext()">＋ Viaje</button>
+            <button class="btn-text-action" style="color:var(--red);" onclick="deleteCurrentTripContext()">🗑️</button>
+        </div>
 
         <div class="metrics-grid">
             <div class="metric-box">
@@ -156,28 +175,26 @@
 
         <div class="insurance-card" onclick="editInsurance()">
             <div class="insurance-header">
-                <span class="insurance-title">🛡️ Asistencia Médica de Viaje</span>
-                <span style="font-size:0.65rem; color:var(--teal); text-decoration:underline; cursor:pointer;">Editar</span>
+                <span class="insurance-title">🛡️ Asistencia Médica</span>
+                <span style="font-size:0.65rem; color:var(--teal); text-decoration:underline;">Editar</span>
             </div>
             <div class="insurance-grid">
                 <div class="insurance-item">
                     <span>Prestador / Póliza</span>
-                    <span id="insProvider">Completar datos</span>
+                    <span id="insProvider">-</span>
                 </div>
                 <div class="insurance-item">
                     <span>Vigencia / Cobertura</span>
-                    <span id="insCoverage">Sin registrar</span>
+                    <span id="insCoverage">-</span>
                 </div>
             </div>
-            <div style="font-size: 0.72rem; color: var(--label2); margin-top: 0.1rem; line-height: 1.25;" id="insNotes">
-                Pulsá acá para registrar el alcance, teléfonos de emergencia y documentos adjuntos de tu asistencia al viajero.
-            </div>
+            <div class="insurance-notes" id="insNotes"></div>
         </div>
 
         <div class="form-card" id="formCard">
             <div class="form-toggle-row" onclick="toggleForm()">
-                <span class="label">➕ Añadir hito o reserva al Timeline</span>
-                <span class="chevron" style="font-size:0.7rem; color:var(--label3);">▼</span>
+                <span class="label">➕ Añadir hito a este viaje</span>
+                <span style="font-size:0.7rem; color:var(--label3);">▼</span>
             </div>
             <div class="form-body">
                 <div class="form-body-inner">
@@ -210,7 +227,7 @@
                     <div class="row-inputs">
                         <div class="form-group">
                             <label>Código Reserva (opcional)</label>
-                            <input type="text" id="fCode" placeholder="Ej: GEB5VX">
+                            <input type="text" id="fCode">
                         </div>
                         <div class="form-group">
                             <label>Monto a pagar allá (USD)</label>
@@ -218,16 +235,26 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Notas / Detalles (Equipaje, dirección, etc.)</label>
-                        <textarea id="fNotes" rows="2" placeholder="Ej: 1 valija de ida. Dominican Transfer WA..."></textarea>
+                        <label>Notas / Detalles</label>
+                        <textarea id="fNotes" rows="2"></textarea>
                     </div>
                     <button class="btn-add" onclick="addMilestone()">Insertar en Itinerario</button>
                 </div>
             </div>
         </div>
 
-        <div class="section-label">🗺️ Itinerario del Viaje</div>
-        <div class="timeline-container" id="timelineContainer"></div>
+        <div class="section-label">🗺️ Línea de Tiempo Activa</div>
+        <div class="timeline-container" id="activeTimelineContainer"></div>
+
+        <div class="history-card" id="historyCard">
+            <div class="form-toggle-row" onclick="document.getElementById('historyCard').classList.toggle('open')">
+                <span class="label" style="color:var(--label2);">⏳ Historial de Hitos Pasados</span>
+                <span style="font-size:0.7rem; color:var(--label3);">▼</span>
+            </div>
+            <div class="history-body">
+                <div class="timeline-container" id="historyTimelineContainer" style="margin-top:0.4rem;"></div>
+            </div>
+        </div>
 
         <div class="settings-footer">
             <button class="btn-settings-link" onclick="forceSetupCredentials()">⚙️ Enlazar Base de Datos en la Nube (Gist)</button>
@@ -235,33 +262,93 @@
     </div>
 
     <script>
-        // SEED DATA REAL PROPORCIONADA EN EL BRIEF
-        const DEFAULT_SEED = {
-            vipPasses: 2,
-            insurance: {
-                provider: "Universal Assistance",
-                coverage: "17 Jul - 04 Ago / Alcance Global",
-                notes: "Teléfono emergencias: +1... Documentos guardados en Drive corporativo."
-            },
-            milestones: [
-                { id: "m1", type: "pass", title: "Fast Pass Migraciones", date: "2026-07-17", time: "14:15", code: "", cost: 0, notes: "Hora reservada confirmada para evitar colas de salida.", checklist: [{text:"Llevar QR impreso", done:false}] },
-                { id: "m2", type: "flight", title: "Vuelo Jetsmart JA 732 (AEP -> SCL)", date: "2026-07-17", time: "16:30", code: "GEB5VX", cost: 0, notes: "Llega 17:46. Equipaje permitido: 1 valija de ida.", checklist: [{text:"Hacer check-in 24hs antes", done:true}, {text:"Pesar mochila de mano", done:false}] },
-                { id: "m3", type: "flight", title: "Vuelo Arajet (SCL -> PUJ)", date: "2026-07-18", time: "00:01", code: "VNLKSD", cost: 0, notes: "Llega 08:01am a Punta Cana. Equipaje: 3 valijas totales permitidas.", checklist: [] },
-                { id: "m4", type: "transfer", title: "Dominican Transfer al Hotel (Bayahibe)", date: "2026-07-18", time: "08:30", code: "", cost: 150, notes: "Contacto WhatsApp: +18299174178. Costo: USD 150 a pagar en efectivo.", checklist: [{text:"Cambiar billetes chicos de USD", done:false}] },
-                { id: "m5", type: "hotel", title: "Reserva Hotel Bayahibe (Deluxe Tropical)", date: "2026-07-18", time: "15:00", code: "hft6wp2uw", cost: 0, notes: "Salida: 30/07/2026. Regimen Todo Incluido. Ya se encuentra pago por completo (USD 2,508.00).", checklist: [] },
-                { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [] },
-                { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", checklist: [] },
-                { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [] },
-                { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [] }
-            ]
-        };
+        // Seed data original empaquetada
+        const LEGACY_SEED = [
+            { id: "m1", type: "pass", title: "Fast Pass Migraciones", date: "2026-07-17", time: "14:15", code: "", cost: 0, notes: "Hora reservada confirmada para evitar colas de salida.", checklist: [{text:"Llevar QR impreso", done:false}] },
+            { id: "m2", type: "flight", title: "Vuelo Jetsmart JA 732 (AEP -> SCL)", date: "2026-07-17", time: "16:30", code: "GEB5VX", cost: 0, notes: "Llega 17:46. Equipaje permitido: 1 valija de ida.", checklist: [{text:"Hacer check-in 24hs antes", done:true}, {text:"Pesar mochila de mano", done:false}] },
+            { id: "m3", type: "flight", title: "Vuelo Arajet (SCL -> PUJ)", date: "2026-07-18", time: "00:01", code: "VNLKSD", cost: 0, notes: "Llega 08:01am a Punta Cana. Equipaje: 3 valijas totales permitidas.", checklist: [] },
+            { id: "m4", type: "transfer", title: "Dominican Transfer al Hotel (Bayahibe)", date: "2026-07-18", time: "08:30", code: "", cost: 150, notes: "Contacto WhatsApp: +18299174178. Costo: USD 150 a pagar en efectivo.", checklist: [{text:"Cambiar billetes chicos de USD", done:false}] },
+            { id: "m5", type: "hotel", title: "Reserva Hotel Bayahibe (Deluxe Tropical)", date: "2026-07-18", time: "15:00", code: "hft6wp2uw", cost: 0, notes: "Salida: 30/07/2026. Regimen Todo Incluido. Ya se encuentra pago por completo (USD 2,508.00).", checklist: [] },
+            { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [] },
+            { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", checklist: [] },
+            { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [] },
+            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [] }
+        ];
 
-        let travelState = JSON.parse(localStorage.getItem('trippulse_state_v1')) || DEFAULT_SEED;
+        // ENGINE ESTRUCTURAL v2.0 (Soporte multi-viaje con fallback controlado)
+        let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
+
+        if (!globalState) {
+            // Intenta migrar la base v1 si existiera en el entorno local
+            let oldData = JSON.parse(localStorage.getItem('trippulse_state_v1'));
+            if (oldData && Array.isArray(oldData.milestones)) {
+                globalState = {
+                    activeTripId: "trip_bayahibe",
+                    trips: [{
+                        id: "trip_bayahibe",
+                        name: "Bayahibe + Chile 2026",
+                        vipPasses: oldData.vipPasses || 2,
+                        insurance: oldData.insurance || { provider: "Universal Assistance", coverage: "17 Jul - 04 Ago", notes: "" },
+                        milestones: oldData.milestones.map(m => ({ ...m, passed: false }))
+                    }]
+                };
+            } else {
+                // Inicialización limpia de fábrica con seed de datos del brief
+                globalState = {
+                    activeTripId: "trip_bayahibe",
+                    trips: [{
+                        id: "trip_bayahibe",
+                        name: "Bayahibe + Chile 2026",
+                        vipPasses: 2,
+                        insurance: { provider: "Universal Assistance", coverage: "17 Jul - 04 Ago / Global", notes: "Documentos guardados en Drive." },
+                        milestones: LEGACY_SEED.map(m => ({ ...m, passed: false }))
+                    }]
+                };
+            }
+            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+        }
+
+        function getActiveTrip() {
+            return globalState.trips.find(t => t.id === globalState.activeTripId) || globalState.trips[0];
+        }
 
         function save() {
-            localStorage.setItem('trippulse_state_v1', JSON.stringify(travelState));
+            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
             autoPushToCloud();
             render();
+        }
+
+        function changeTripContext(id) {
+            globalState.activeTripId = id;
+            save();
+        }
+
+        function createNewTripContext() {
+            const name = prompt("Ingresá el destino o nombre del nuevo viaje:");
+            if (!name || !name.trim()) return;
+            const newId = "trip_" + Date.now();
+            globalState.trips.push({
+                id: newId,
+                name: name.trim(),
+                vipPasses: 0,
+                insurance: { provider: "", coverage: "", notes: "" },
+                milestones: []
+            });
+            globalState.activeTripId = newId;
+            save();
+        }
+
+        function deleteCurrentTripContext() {
+            if (globalState.trips.length <= 1) {
+                alert("No podés eliminar tu único viaje activo.");
+                return;
+            }
+            const activeTrip = getActiveTrip();
+            if (confirm(`¿Seguro que querés borrar el viaje "${activeTrip.name}" y toda su información por completo?`)) {
+                globalState.trips = globalState.trips.filter(t => t.id !== activeTrip.id);
+                globalState.activeTripId = globalState.trips[0].id;
+                save();
+            }
         }
 
         function toggleForm() {
@@ -269,17 +356,19 @@
         }
 
         function changeVip(amount) {
-            travelState.vipPasses = Math.max(0, travelState.vipPasses + amount);
+            const trip = getActiveTrip();
+            trip.vipPasses = Math.max(0, trip.vipPasses + amount);
             save();
         }
 
         function editInsurance() {
-            const provider = prompt("Nombre del Seguro / Nro Póliza:", travelState.insurance.provider);
-            const coverage = prompt("Vigencia / Alcance:", travelState.insurance.coverage);
-            const notes = prompt("Detalles adicionales / Números de emergencia:", travelState.insurance.notes);
+            const trip = getActiveTrip();
+            const provider = prompt("Nombre del Seguro / Nro Póliza:", trip.insurance.provider);
+            const coverage = prompt("Vigencia / Alcance:", trip.insurance.coverage);
+            const notes = prompt("Detalles adicionales / Números de emergencia:", trip.insurance.notes);
             
             if (provider !== null && coverage !== null && notes !== null) {
-                travelState.insurance = { provider, coverage, notes };
+                trip.insurance = { provider, coverage, notes };
                 save();
             }
         }
@@ -298,13 +387,13 @@
                 return;
             }
 
-            travelState.milestones.push({
-                id: 'custom_' + Date.now(),
-                type, title, date, time, code, cost, notes,
+            const trip = getActiveTrip();
+            trip.milestones.push({
+                id: 'm_' + Date.now(),
+                type, title, date, time, code, cost, notes, passed: false,
                 checklist: []
             });
 
-            // Limpieza de campos
             document.getElementById('fTitle').value = '';
             document.getElementById('fCode').value = '';
             document.getElementById('fCost').value = '';
@@ -315,14 +404,26 @@
         }
 
         function deleteMilestone(id) {
-            if(confirm("¿Seguro que querés remover esta reserva o hito del viaje?")) {
-                travelState.milestones = travelState.milestones.filter(m => m.id !== id);
+            if(confirm("¿Remover esta reserva o hito del viaje?")) {
+                const trip = getActiveTrip();
+                trip.milestones = trip.milestones.filter(m => m.id !== id);
+                save();
+            }
+        }
+
+        /* 🔥 CONMUTADOR DE HISTORICO (MARCAR COMO PASADO) */
+        function toggleMilestonePassed(id) {
+            const trip = getActiveTrip();
+            const milestone = trip.milestones.find(m => m.id === id);
+            if(milestone) {
+                milestone.passed = !milestone.passed;
                 save();
             }
         }
 
         function toggleTask(milestoneId, taskIndex) {
-            const milestone = travelState.milestones.find(m => m.id === milestoneId);
+            const trip = getActiveTrip();
+            const milestone = trip.milestones.find(m => m.id === milestoneId);
             if(milestone && milestone.checklist[taskIndex]) {
                 milestone.checklist[taskIndex].done = !milestone.checklist[taskIndex].done;
                 save();
@@ -335,7 +436,8 @@
                 const text = input.value.trim();
                 if(!text) return;
 
-                const milestone = travelState.milestones.find(m => m.id === milestoneId);
+                const trip = getActiveTrip();
+                const milestone = trip.milestones.find(m => m.id === milestoneId);
                 if(milestone) {
                     if(!milestone.checklist) milestone.checklist = [];
                     milestone.checklist.push({ text, done: false });
@@ -347,14 +449,26 @@
 
         function formatDisplayDate(dateStr) {
             const options = { weekday: 'short', day: 'numeric', month: 'short' };
-            // Forzar formateo local sin desfases de huso horario
             const parts = dateStr.split('-');
             const date = new Date(parts[0], parts[1] - 1, parts[2]);
             return date.toLocaleDateString('es-AR', options);
         }
 
+        function shareWhatsApp(id) {
+            const trip = getActiveTrip();
+            const item = trip.milestones.find(m => m.id === id);
+            let text = `✈️ *TripPulse Itinerario* — _Reserva de ${trip.name}_\n\n`;
+            text += `*Hito:* ${item.title}\n`;
+            text += `*Fecha/Hora:* ${formatDisplayDate(item.date)} a las ${item.time}hs\n`;
+            if(item.code) text += `*Código de Reserva:* ${item.code}\n`;
+            if(item.cost > 0) text += `*Monto pendiente:* USD ${item.cost}\n`;
+            text += `*Detalles:* ${item.notes}\n`;
+
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
         /* ========================================================
-           ☁️ MOTOR AUTO-SYNC INTEGRADO (COMPARTIDO CON LA WISHLIST)
+           ☁️ COOPERATIVIDAD EN LA NUBE (GISTS CLOUD ARCHITECTURE)
            ======================================================== */
         function forceSetupCredentials() {
             const token = prompt("Ingresá tu GitHub Token (PAT):", localStorage.getItem('wishlist_gh_token') || '');
@@ -367,19 +481,14 @@
         }
 
         function getSyncCredentials() {
-            return {
-                token: localStorage.getItem('wishlist_gh_token'),
-                gistId: localStorage.getItem('wishlist_gh_gist')
-            };
+            return { token: localStorage.getItem('wishlist_gh_token'), gistId: localStorage.getItem('wishlist_gh_gist') };
         }
 
         async function autoPullFromCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
-
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
-
             try {
                 const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     headers: { 'Authorization': `token ${creds.token}` }
@@ -388,33 +497,31 @@
                     const gistData = await res.json();
                     if(gistData.files["travel_timeline.json"]) {
                         const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
-                        if(cloudContent && Array.isArray(cloudContent.milestones)) {
-                            travelState = cloudContent;
-                            localStorage.setItem('trippulse_state_v1', JSON.stringify(travelState));
+                        if(cloudContent && Array.isArray(cloudContent.trips)) {
+                            globalState = cloudContent;
+                            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
                             render();
                         }
                     }
                 }
-            } catch(e) { console.log("Descarga silenciosa fallida:", e); }
+            } catch(e) { console.log("Descarga pasiva abortada:", e); }
             finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
         async function autoPushToCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
-
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
-
             try {
                 await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `token ${creds.token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        files: { "travel_timeline.json": { content: JSON.stringify(travelState, null, 2) } }
+                        files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
                     })
                 });
-            } catch(e) { console.log("Subida silenciosa fallida:", e); }
+            } catch(e) { console.log("Subida pasiva abortada:", e); }
             finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
@@ -423,91 +530,111 @@
             await autoPushToCloud();
         }
 
-        function render() {
-            // Actualizar Widget Fijo de Seguro
-            document.getElementById('insProvider').textContent = travelState.insurance.provider || "Completar";
-            document.getElementById('insCoverage').textContent = travelState.insurance.coverage || "Completar";
-            document.getElementById('insNotes').textContent = travelState.insurance.notes || "";
-            document.getElementById('valVipCount').textContent = travelState.vipPasses;
-
-            // Ordenamiento cronológico automático crítico antes del renderizado
-            travelState.milestones.sort((a, b) => {
-                const dateA = a.date + 'T' + a.time;
-                const dateB = b.date + 'T' + b.time;
-                return dateA.localeCompare(dateB);
-            });
-
-            let totalPendingPay = 0;
-            const container = document.getElementById('timelineContainer');
-            container.innerHTML = '';
-
-            if (travelState.milestones.length === 0) {
-                container.innerHTML = `<div class="empty-state">No hay hitos cargados en la línea de tiempo.</div>`;
-                document.getElementById('valPendingPay').textContent = "USD 0.00";
-                return;
+        // FUNCIÓN CENTRALIZADA DE MAQUETADO DE TARJETAS MILISTONES
+        function buildMilestoneCardHtml(milestone) {
+            let checklistHtml = '';
+            if(milestone.checklist && milestone.checklist.length > 0) {
+                const itemsHtml = milestone.checklist.map((task, idx) => `
+                    <div class="task-item ${task.done ? 'done' : ''}" onclick="toggleTask('${milestone.id}', ${idx})">
+                        <div class="task-checkbox">
+                            <svg class="task-checkmark" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
+                        </div>
+                        <span>${task.text}</span>
+                    </div>
+                `).join('');
+                checklistHtml = `<div class="subchecklist-box">${itemsHtml}</div>`;
             }
 
-            travelState.milestones.forEach((milestone) => {
-                totalPendingPay += milestone.cost;
+            let waButtonHtml = '';
+            const waMatch = milestone.notes.match(/\+1\s?\(?\d{3}\)?\s?\d{3}-?\d{4}/) || milestone.notes.match(/\+\d{10,13}/);
+            if (waMatch) {
+                const cleanNum = waMatch[0].replace(/[^0-9+]/g, '');
+                waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
+            }
 
-                // Bloque HTML de Checklist interno
-                let checklistHtml = '';
-                if(milestone.checklist && milestone.checklist.length > 0) {
-                    const itemsHtml = milestone.checklist.map((task, idx) => `
-                        <div class="task-item ${task.done ? 'done' : ''}" onclick="toggleTask('${milestone.id}', ${idx})">
-                            <div class="task-checkbox">
-                                <svg class="task-checkmark" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
-                            </div>
-                            <span>${task.text}</span>
-                        </div>
-                    `).join('');
-                    checklistHtml = `<div class="subchecklist-box">${itemsHtml}</div>`;
-                }
-
-                // Parser para link dinámico de WhatsApp si se detecta número en la nota
-                let waButtonHtml = '';
-                const waMatch = milestone.notes.match(/\+1\s?\(?\d{3}\)?\s?\d{3}-?\d{4}/) || milestone.notes.match(/\+\d{10,13}/);
-                if (waMatch) {
-                    const cleanNum = waMatch[0].replace(/[^0-9+]/g, '');
-                    waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA Link</a>`;
-                }
-
-                const card = document.createElement('div');
-                card.className = `timeline-card is-${milestone.type}`;
-                card.innerHTML = `
-                    <div class="card-meta-row">
-                        <span class="datetime-stamp">${formatDisplayDate(milestone.date)} — ${milestone.time} hs</span>
-                        <span class="type-badge">${milestone.type}</span>
-                    </div>
+            return `
+                <div class="card-meta-row">
+                    <span class="datetime-stamp">${formatDisplayDate(milestone.date)} — ${milestone.time} hs</span>
+                    <span class="type-badge">${milestone.type}</span>
+                </div>
+                <div class="card-title-row">
+                    <button class="btn-milestone-check" onclick="toggleMilestonePassed('${milestone.id}')" title="Marcar como pasado / Archivar">
+                        <svg viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
+                    </button>
                     <div class="card-main-title">
                         ${milestone.title}
                         ${milestone.code ? `<span class="res-code">${milestone.code}</span>` : ''}
                     </div>
-                    
-                    <div class="info-strip">
-                        ${milestone.cost > 0 ? `<span style="color:var(--orange); font-weight:700;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</span>` : '<span style="color:var(--green)">🟢 Pago / Concedido</span>'}
-                        <span>${milestone.notes}</span>
-                    </div>
+                </div>
+                
+                <div class="info-strip">
+                    ${milestone.cost > 0 ? `<span style="color:var(--orange); font-weight:700;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</span>` : '<span style="color:var(--green)">🟢 Sin pagos pendientes</span>'}
+                    <span>${milestone.notes}</span>
+                </div>
 
-                    <div class="subchecklist-box" onclick="event.stopPropagation()">
-                        <div class="subchecklist-title">
-                            <span>Dependencias / Checklist</span>
-                            <span>${milestone.checklist ? milestone.checklist.filter(c=>c.done).length : 0}/${milestone.checklist ? milestone.checklist.length : 0}</span>
-                        </div>
-                        ${checklistHtml}
-                        <div class="add-task-inline">
-                            <input type="text" id="input_add_${milestone.id}" placeholder="Añadir pendiente previo..." onkeypress="addTaskInline(event, '${milestone.id}')">
-                            <button onclick="addTaskInline(event, '${milestone.id}')">＋</button>
-                        </div>
+                <div class="subchecklist-box" onclick="event.stopPropagation()">
+                    <div class="subchecklist-title">
+                        <span>Dependencias / Checklist</span>
+                        <span>${milestone.checklist ? milestone.checklist.filter(c=>c.done).length : 0}/${milestone.checklist ? milestone.checklist.length : 0}</span>
                     </div>
+                    ${checklistHtml}
+                    <div class="add-task-inline">
+                        <input type="text" id="input_add_${milestone.id}" placeholder="Añadir pendiente..." onkeypress="addTaskInline(event, '${milestone.id}')">
+                        <button onclick="addTaskInline(event, '${milestone.id}')">＋</button>
+                    </div>
+                </div>
 
-                    <div class="card-actions">
-                        ${waButtonHtml}
-                        <button class="btn-action-small delete-trigger" onclick="deleteMilestone('${milestone.id}')">Eliminar</button>
-                    </div>
-                `;
-                container.appendChild(card);
+                <div class="card-actions">
+                    ${waButtonHtml}
+                    <button class="btn-action-small" onclick="shareWhatsApp('${milestone.id}')">Compartir</button>
+                    <button class="btn-action-small delete-trigger" onclick="deleteMilestone('${milestone.id}')">Eliminar</button>
+                </div>
+            `;
+        }
+
+        function render() {
+            const trip = getActiveTrip();
+
+            // Sincronizar UI del Selector de Viajes
+            const select = document.getElementById('tripSelector');
+            select.innerHTML = globalState.trips.map(t => `<option value="${t.id}" ${t.id === globalState.activeTripId ? 'selected' : ''}>📌 ${t.name}</option>`).join('');
+
+            // Cargar datos estáticos del Seguro
+            document.getElementById('insProvider').textContent = trip.insurance.provider || "Sin registrar";
+            document.getElementById('insCoverage').textContent = trip.insurance.coverage || "Sin registrar";
+            document.getElementById('insNotes').textContent = trip.insurance.notes || "Pulsá acá para registrar información de salud.";
+            document.getElementById('valVipCount').textContent = trip.vipPasses;
+
+            // Ordenamiento Cronológico
+            trip.milestones.sort((a, b) => (a.date + 'T' + a.time).localeCompare(b.date + 'T' + b.time));
+
+            const activeContainer = document.getElementById('activeTimelineContainer');
+            const historyContainer = document.getElementById('historyTimelineContainer');
+            
+            activeContainer.innerHTML = '';
+            historyContainer.innerHTML = '';
+
+            let totalPendingPay = 0;
+            let activeCount = 0;
+            let historyCount = 0;
+
+            trip.milestones.forEach((milestone) => {
+                const card = document.createElement('div');
+                card.className = `timeline-card is-${milestone.type} ${milestone.passed ? 'passed-milestone' : ''}`;
+                card.innerHTML = buildMilestoneCardHtml(milestone);
+
+                if (!milestone.passed) {
+                    totalPendingPay += milestone.cost;
+                    activeContainer.appendChild(card);
+                    activeCount++;
+                } else {
+                    historyContainer.appendChild(card);
+                    historyCount++;
+                }
             });
+
+            if(activeCount === 0) activeContainer.innerHTML = `<div class="empty-state">No hay hitos activos en el horizonte.</div>`;
+            if(historyCount === 0) historyContainer.innerHTML = `<div class="empty-state">El historial de este viaje está vacío.</div>`;
 
             document.getElementById('valPendingPay').textContent = `USD ${totalPendingPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
