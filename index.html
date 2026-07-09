@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v3.6</title>
+    <title>TripPulse v3.7</title>
     <link class="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -147,6 +147,7 @@
 
         .settings-footer { margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3); }
         .empty-state { text-align: center; color: var(--label3); padding: 2.5rem 1rem; font-size: 0.82rem; }
+        .wish-category { font-size: 0.65rem; color: var(--label3); background: var(--surface2); padding: 0.1rem 0.35rem; text-transform: uppercase; font-weight: 700; flex-shrink: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -154,7 +155,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v3.6</span></h1>
+                <h1>TripPulse <span class="version-badge">v3.7</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -295,10 +296,11 @@
             { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [], hasPayment: false },
             { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", checklist: [], hasPayment: false },
             { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [], hasPayment: true },
-            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], has roles: false }
+            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], hasPayment: false }
         ];
 
         let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
+        let isSyncingLock = false;
 
         if (!globalState) {
             globalState = {
@@ -590,17 +592,8 @@
             return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}`;
         }
 
-        function forceSetupCredentials() {
-            const token = prompt("Ingresá tu nuevo GitHub Token (PAT Classic con la casilla 'gist' tildada):", localStorage.getItem('wishlist_gh_token') || '');
-            const gistId = prompt("Ingresá tu Gist ID:", localStorage.getItem('wishlist_gh_gist') || '206145949f30bf9663b1f7ba2ed4573a');
-            if(token && gistId) {
-                localStorage.setItem('wishlist_gh_token', token.trim());
-                localStorage.setItem('wishlist_gh_gist', gistId.trim());
-                manualSync();
-            }
-        }
-
         async function autoPullFromCloud() {
+            if(isSyncingLock) return;
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
             const syncBtn = document.getElementById('btnCloudSync');
@@ -629,6 +622,7 @@
         async function autoPushToCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
+            isSyncingLock = true;
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
@@ -644,7 +638,10 @@
                 });
             } catch(e) { 
                 console.log("Fallo asincrónico plano mitigado.");
-            } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
+            } finally { 
+                isSyncingLock = false;
+                if(syncBtn) syncBtn.classList.remove('spinning'); 
+            }
         }
 
         async function manualSync() {
@@ -653,8 +650,10 @@
                 forceSetupCredentials();
                 return;
             }
+            isSyncingLock = true;
             await autoPullFromCloud();
             await autoPushToCloud();
+            isSyncingLock = false;
             alert("🔄 Sincronización exitosa con la nube.");
         }
 
@@ -721,7 +720,7 @@
                     <span class="type-badge">${displayType}</span>
                 </div>
                 <div class="card-title-row">
-                    <button class="btn-milestone-check" onclick="toggleMilestonePassed('${milestone.id}')" title="Archivar Hito Pasado">
+                    <button class="btn-milestone-check" onclick="toggleMilestonePassed('${milestone.id}')" title="Marcar como completado">
                         <svg viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
                     </button>
                     <div style="min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
@@ -821,7 +820,7 @@
 
         document.addEventListener("visibilitychange", async () => {
             if (!document.hidden) {
-                try { await autoPullFromCloud(); } catch(e){}
+                await autoPullFromCloud();
             }
         });
     </script>
