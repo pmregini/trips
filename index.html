@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v4.2</title>
+    <title>TripPulse v4.3</title>
     <link class="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -156,7 +156,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v4.2</span></h1>
+                <h1>TripPulse <span class="version-badge">v4.3</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -304,12 +304,14 @@
             { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], hasPayment: false }
         ];
 
+        /* 🛒 DETECCION BASE LOCAL INTEGRANDO EL CHECK DE ATOMICIDAD DE MARCA DE TIEMPO */
+        let isFreshInstall = !localStorage.getItem('trippulse_global_v2');
         let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
         let isSyncingLock = false;
 
         if (!globalState) {
             globalState = {
-                updatedAt: 0,
+                updatedAt: 1, // Inicialización controlada sobre cero para hidratación asíncrona
                 activeTripId: "trip_bayahibe",
                 trips: [{
                     id: "trip_bayahibe",
@@ -324,7 +326,7 @@
             };
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
         }
-        if (!globalState.updatedAt) globalState.updatedAt = 0;
+        if (!globalState.updatedAt) globalState.updatedAt = 1;
 
         function getSyncCredentials() {
             let token = localStorage.getItem('wishlist_gh_token');
@@ -346,7 +348,6 @@
             return trip;
         }
 
-        /* 📡 MUTACIÓN SECUENCIAL PURA CON ENCOLA ASÍNCRO v4.2 */
         async function save() {
             globalState.updatedAt = Date.now();
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
@@ -605,7 +606,7 @@
             return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(milestone.address || '')}`;
         }
 
-        /* 📡 TIMESTAMP RESOLUTION BLUEPRINT: LA NUBE SOLO COMPARA Y REEMPLAZA SI ES SUPERIOR */
+        /* 📡 CORE DE GESTION INTEGRADO: CORRIGE EL PISADO CIEGO CON DEFENSA CONTRA JSON REMOTOS VIEJOS v4.3 */
         async function autoPullFromCloud(isForcedManual = false) {
             if(isSyncingLock && !isForcedManual) return;
             const creds = getSyncCredentials();
@@ -623,9 +624,11 @@
                         const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
                         const cloudUpdatedAt = cloudContent.updatedAt || 0;
                         
-                        if(cloudUpdatedAt > globalState.updatedAt || isForcedManual) {
+                        /* 🛠️ HYDRATION FALLBACK DE RESCATE SI LA COLA VIENE EN BLANCO O ES PRIMER BOOTEO */
+                        if(cloudUpdatedAt > globalState.updatedAt || isForcedManual || (isFreshInstall && cloudContent.trips && cloudContent.trips.length > 0)) {
                             globalState = cloudContent;
                             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+                            isFreshInstall = false;
                             render();
                         } else if(globalState.updatedAt > cloudUpdatedAt) {
                             await autoPushToCloud(true);
@@ -696,7 +699,7 @@
                 waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
             }
 
-            /* 📍 RENDERIZADO DEL BOTÓN MAPA CON LINK NATIVO UNIVERSAL A GOOGLE MAPS */
+            /* 📍 BOTÓN DE GOOGLE MAPS DIRECTO */
             let mapButtonHtml = '';
             if (milestone.address && milestone.address.trim() !== '') {
                 mapButtonHtml = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(milestone.address)}" target="_blank" class="btn-map-link">📍 Ver Mapa</a>`;
@@ -770,8 +773,7 @@
 
                 <div class="card-actions">
                     ${waButtonHtml}
-                    ${item.address || milestone.type === 'hotel' ? waButtonHtml : ''}
-                    ${milestone.address ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(milestone.address)}" target="_blank" class="btn-action-small" style="color:var(--orange); text-decoration:none; font-weight:600;">📍 Ver Mapa</a>` : ''}
+                    ${mapButtonHtml}
                     <a href="${googleCalUrl}" target="_blank" class="btn-action-small" style="color:var(--teal); text-decoration:none; font-weight:600;">📅 Google Cal</a>
                     <button class="btn-action-small" onclick="editMilestoneNotes('${milestone.id}')">Editar Notas</button>
                     <button class="btn-action-small" onclick="shareWhatsApp('${milestone.id}')">Compartir</button>
@@ -816,7 +818,6 @@
             let historyCount = 0;
 
             trip.milestones.forEach((milestone) => {
-                /* Asegurar consistencia del campo address en el mapeo */
                 if(!milestone.address && milestone.type === 'hotel' && milestone.id === 'm5') milestone.address = "Bayahibe Highway, Bayahibe 23000";
                 if(!milestone.address && milestone.type === 'hotel' && milestone.id === 'm7') milestone.address = "Av. Vitacura 2610, Las Condes, Santiago";
 
@@ -842,7 +843,6 @@
             document.getElementById('valPendingPay').textContent = `USD ${totalPendingPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
 
-        /* 🚀 DETECTOR DE FOCO SEGURO CON FILTRO DE TIMESTAMP COMPATIBLE CON DOMINIOS COMPARTIDOS */
         window.onload = function() {
             getSyncCredentials(); 
             render();
