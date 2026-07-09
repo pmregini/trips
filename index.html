@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v3.0</title>
+    <title>TripPulse v3.1</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -153,7 +153,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v3.0</span></h1>
+                <h1>TripPulse <span class="version-badge">v3.1</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -280,7 +280,7 @@
         </div>
 
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v3.0 • 2026 • </span>
+            <span>TripPulse v3.1 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
@@ -317,7 +317,7 @@
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
         }
 
-        /* 🔒 RETORNO A CONFIGURACIÓN PURA LOCAL v3.0 (PROTECCIÓN DE TOKENS) */
+        /* 🔒 RETORNO A ARQUITECTURA PURA LOCAL v3.1 (SIN TOKENS EXPUESTOS) */
         function getSyncCredentials() {
             return {
                 token: localStorage.getItem('wishlist_gh_token'),
@@ -587,6 +587,16 @@
             return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}`;
         }
 
+        function forceSetupCredentials() {
+            const token = prompt("Ingresá tu nuevo GitHub Token (PAT Classic con scope 'gist'):", localStorage.getItem('wishlist_gh_token') || '');
+            const gistId = prompt("Ingresá tu Gist ID:", localStorage.getItem('wishlist_gh_gist') || '206145949f30bf9663b1f7ba2ed4573a');
+            if(token && gistId) {
+                localStorage.setItem('wishlist_gh_token', token.trim());
+                localStorage.setItem('wishlist_gh_gist', gistId.trim());
+                manualSync();
+            }
+        }
+
         async function autoPullFromCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
@@ -612,14 +622,14 @@
                                 render();
                             }
                         } catch(parseErr) {
-                            console.error("Payload corrupto o JSON inválido en la nube.", parseErr);
+                            console.error("Payload corrupto en la nube.", parseErr);
                         }
                     }
                 } else {
-                    throw new Error(`Código de respuesta HTTP ${res.status}`);
+                    throw new Error(`HTTP ${res.status}`);
                 }
             } catch(e) { 
-                console.log("Descarga fallida:", e);
+                console.log("Descarga pasiva abortada:", e); 
                 throw e;
             } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
@@ -638,16 +648,13 @@
                         files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
                     })
                 });
-                if(!res.ok) {
-                    throw new Error(`Código de respuesta HTTP ${res.status}`);
-                }
+                if(!res.ok) throw new Error(`HTTP ${res.status}`);
             } catch(e) { 
-                console.log("Subida fallida:", e); 
+                console.log("Subida pasiva abortada:", e); 
                 throw e;
             } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
-        /* 🔄 COMPORTAMIENTO DE CONTROL DE ERRORES DETERMINÍSTICO v3.0 */
         async function manualSync() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) {
@@ -657,9 +664,9 @@
             try {
                 await autoPullFromCloud();
                 await autoPushToCloud();
-                alert("🔄 ¡Sincronización exitosa con la nube!");
+                alert("🔄 Sincronización exitosa con la nube.");
             } catch(err) {
-                alert(`❌ Error de sincronización: ${err.message}.\n\nTu token puede haber sido revocado de forma automática por GitHub por seguridad. Volvé a enlazarlo.`);
+                alert(`❌ Falló la escritura en la nube (${err.message}).\n\nTu token viejo fue destruido por GitHub al exponerse públicamente. Tenés que generar un nuevo token en GitHub Settings y cargarlo acá.`);
                 forceSetupCredentials();
             }
         }
@@ -804,9 +811,7 @@
                 const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
 
                 if (!milestone.passed) {
-                    if (hasPay) {
-                        totalPendingPay += milestone.cost;
-                    }
+                    if (hasPay) totalPendingPay += milestone.cost;
                     activeContainer.appendChild(card);
                     activeCount++;
                 } else {
@@ -823,11 +828,10 @@
 
         window.onload = async function() {
             render();
-            try {
-                await autoPullFromCloud();
+            try { 
+                await autoPullFromCloud(); 
             } catch(e) {
-                // Alerta táctil si el booteo asíncrono pasivo de red rebota el token
-                alert("⚠️ Error en descarga automática inicial. Configura tu Token manual presionando en 'Cloud Config'.");
+                console.log("No se pudo descargar automáticamente: falta token o fue revocado.");
             }
         };
 
