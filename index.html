@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v2.9</title>
+    <title>TripPulse v3.0</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -153,7 +153,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v2.9</span></h1>
+                <h1>TripPulse <span class="version-badge">v3.0</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -280,7 +280,7 @@
         </div>
 
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v2.9 • 2026 • </span>
+            <span>TripPulse v3.0 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
@@ -317,21 +317,12 @@
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
         }
 
-        /* 🚀 MOTOR DE RESOLUCIÓN DE CREDENCIALES PRE-INYECTADAS CON TRUCO BYPASS v2.9 */
+        /* 🔒 RETORNO A CONFIGURACIÓN PURA LOCAL v3.0 (PROTECCIÓN DE TOKENS) */
         function getSyncCredentials() {
-            let token = localStorage.getItem('wishlist_gh_token');
-            let gistId = localStorage.getItem('wishlist_gh_gist');
-            
-            if (!token || token.trim() === '') {
-                // Recompone el token fragmentado para eludir el scanner de GitHub Actions
-                token = 'ghp_' + 'Q2QoSU6egigzsJxl1DOzGil7KKwaGu4cwrnP';
-                localStorage.setItem('wishlist_gh_token', token);
-            }
-            if (!gistId || gistId.trim() === '') {
-                gistId = '206145949f30bf9663b1f7ba2ed4573a';
-                localStorage.setItem('wishlist_gh_gist', gistId);
-            }
-            return { token, gistId };
+            return {
+                token: localStorage.getItem('wishlist_gh_token'),
+                gistId: localStorage.getItem('wishlist_gh_gist')
+            };
         }
 
         function getActiveTrip() {
@@ -596,16 +587,6 @@
             return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}`;
         }
 
-        function forceSetupCredentials() {
-            const token = prompt("Ingresá tu GitHub Token (PAT):", localStorage.getItem('wishlist_gh_token') || '');
-            const gistId = prompt("Ingresá tu Gist ID:", localStorage.getItem('wishlist_gh_gist') || '');
-            if(token && gistId) {
-                localStorage.setItem('wishlist_gh_token', token.trim());
-                localStorage.setItem('wishlist_gh_gist', gistId.trim());
-                manualSync();
-            }
-        }
-
         async function autoPullFromCloud() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
@@ -634,9 +615,13 @@
                             console.error("Payload corrupto o JSON inválido en la nube.", parseErr);
                         }
                     }
+                } else {
+                    throw new Error(`Código de respuesta HTTP ${res.status}`);
                 }
-            } catch(e) { console.log("Descarga pasiva abortada o bloqueada por red:", e); }
-            finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
+            } catch(e) { 
+                console.log("Descarga fallida:", e);
+                throw e;
+            } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
         async function autoPushToCloud() {
@@ -645,7 +630,7 @@
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
-                await fetch(`https://api.github.com/gists/${creds.gistId}`, {
+                const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `token ${creds.token}`, 'Content-Type': 'application/json' },
                     keepalive: true,
@@ -653,19 +638,30 @@
                         files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
                     })
                 });
-            } catch(e) { console.log("Subida pasiva abortada:", e); }
-            finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
+                if(!res.ok) {
+                    throw new Error(`Código de respuesta HTTP ${res.status}`);
+                }
+            } catch(e) { 
+                console.log("Subida fallida:", e); 
+                throw e;
+            } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
+        /* 🔄 COMPORTAMIENTO DE CONTROL DE ERRORES DETERMINÍSTICO v3.0 */
         async function manualSync() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) {
                 forceSetupCredentials();
                 return;
             }
-            await autoPullFromCloud();
-            await autoPushToCloud();
-            alert("🔄 Sincronización exitosa con GitHub Cloud.");
+            try {
+                await autoPullFromCloud();
+                await autoPushToCloud();
+                alert("🔄 ¡Sincronización exitosa con la nube!");
+            } catch(err) {
+                alert(`❌ Error de sincronización: ${err.message}.\n\nTu token puede haber sido revocado de forma automática por GitHub por seguridad. Volvé a enlazarlo.`);
+                forceSetupCredentials();
+            }
         }
 
         function buildMilestoneCardHtml(milestone) {
@@ -788,7 +784,7 @@
                 </div>
             `).join('') + `<button class="btn-add-card-inline" onclick="addNewCardInline()">＋ Enlazar nueva tarjeta / pase</button>`;
 
-            trip.milestones.sort((a, b) => (a.date + 'T' + a.time).localeCompare(b.date + 'T' + a.time));
+            trip.milestones.sort((a, b) => (a.date + 'T' + a.time).localeCompare(b.date + 'T' + b.time));
 
             const activeContainer = document.getElementById('activeTimelineContainer');
             const historyContainer = document.getElementById('historyTimelineContainer');
@@ -826,14 +822,18 @@
         }
 
         window.onload = async function() {
-            getSyncCredentials(); // Asegura e inyecta llaves en el ecosistema local en el primer booteo
             render();
-            await autoPullFromCloud();
+            try {
+                await autoPullFromCloud();
+            } catch(e) {
+                // Alerta táctil si el booteo asíncrono pasivo de red rebota el token
+                alert("⚠️ Error en descarga automática inicial. Configura tu Token manual presionando en 'Cloud Config'.");
+            }
         };
 
         document.addEventListener("visibilitychange", async () => {
             if (!document.hidden) {
-                await autoPullFromCloud();
+                try { await autoPullFromCloud(); } catch(e){}
             }
         });
     </script>
