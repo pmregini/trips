@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v3.1</title>
-    <link rel="apple-touch-icon" href="https://fav.farm/✈️">
+    <title>TripPulse v3.2</title>
+    <link class="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
@@ -153,7 +153,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v3.1</span></h1>
+                <h1>TripPulse <span class="version-badge">v3.2</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -280,7 +280,7 @@
         </div>
 
         <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
-            <span>TripPulse v3.1 • 2026 • </span>
+            <span>TripPulse v3.2 • 2026 • </span>
             <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
@@ -317,12 +317,16 @@
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
         }
 
-        /* 🔒 RETORNO A ARQUITECTURA PURA LOCAL v3.1 (SIN TOKENS EXPUESTOS) */
+        /* 🛡️ ENGINE DE VERIFICACIÓN LOCAL v3.2 (CON PRECARGA INTELIGENTE DE GIST ID) */
         function getSyncCredentials() {
-            return {
-                token: localStorage.getItem('wishlist_gh_token'),
-                gistId: localStorage.getItem('wishlist_gh_gist')
-            };
+            let token = localStorage.getItem('wishlist_gh_token');
+            let gistId = localStorage.getItem('wishlist_gh_gist');
+            
+            if (!gistId || gistId.trim() === '') {
+                gistId = '206145949f30bf9663b1f7ba2ed4573a';
+                localStorage.setItem('wishlist_gh_gist', gistId);
+            }
+            return { token, gistId };
         }
 
         function getActiveTrip() {
@@ -666,7 +670,7 @@
                 await autoPushToCloud();
                 alert("🔄 Sincronización exitosa con la nube.");
             } catch(err) {
-                alert(`❌ Falló la escritura en la nube (${err.message}).\n\nTu token viejo fue destruido por GitHub al exponerse públicamente. Tenés que generar un nuevo token en GitHub Settings y cargarlo acá.`);
+                alert(`❌ Falló la escritura en la nube (${err.message}).\n\nTu token viejo fue destruido por GitHub al exponerse públicamente. Genérate un token nuevo en tu perfil de GitHub y vuelve a cargarlo.`);
                 forceSetupCredentials();
             }
         }
@@ -827,11 +831,12 @@
         }
 
         window.onload = async function() {
+            getSyncCredentials(); 
             render();
             try { 
                 await autoPullFromCloud(); 
             } catch(e) {
-                console.log("No se pudo descargar automáticamente: falta token o fue revocado.");
+                console.log("No se pudo descargar de forma automática: falta configurar el nuevo token local.");
             }
         };
 
