@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TripPulse v1.0</title>
+    <link rel="apple-touch-icon" href="https://fav.farm/✈️">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        :root {
+            --bg: #000000;
+            --surface: #1c1c1e;
+            --surface2: #2c2c2e;
+            --surface3: #3a3a3c;
+            --separator: rgba(255,255,255,0.09);
+            --label: #ffffff;
+            --label2: #98989d;
+            --label3: #636366;
+            --accent: #007aff;
+            --green: #30d158;
+            --orange: #ff9f0a;
+            --red: #ff453a;
+            --purple: #bf5af2;
+            --teal: #5ac8ea;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-font-smoothing: antialiased; }
+        body {
+            background: var(--bg);
+            color: var(--label);
+            padding: calc(env(safe-area-inset-top) + 0.6rem) 0.8rem calc(env(safe-area-inset-bottom) + 5.5rem) 0.8rem;
+            letter-spacing: -0.01em;
+        }
+
+        .container { max-width: 500px; margin: 0 auto; }
+
+        header { padding: 0.3rem 0.1rem 0.9rem 0.1rem; display: flex; justify-content: space-between; align-items: flex-start; }
+        h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
+        .subtitle { color: var(--label2); font-size: 0.8rem; margin-top: 0.1rem; font-weight: 400; }
+
+        .btn-cloud-sync { background: var(--surface2); border: 1px solid var(--surface3); color: var(--purple); width: 38px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .btn-cloud-sync.spinning { animation: spin 0.8s linear infinite; color: var(--green); }
+
+        /* Widget de Control Superior */
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem; }
+        .metric-box { background: var(--surface); border-radius: 14px; padding: 0.7rem 0.9rem; display: flex; flex-direction: column; gap: 0.15rem; }
+        .metric-box label { font-size: 0.65rem; color: var(--label3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+        .metric-box .value { font-size: 1.15rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .metric-box .value.pending-pay { color: var(--orange); }
+        .metric-box .counter-actions { display: flex; gap: 0.5rem; margin-top: 0.2rem; }
+        .btn-counter { background: var(--surface2); border: none; color: var(--label); font-weight: 600; font-size: 0.8rem; padding: 0.15rem 0.5rem; border-radius: 6px; cursor: pointer; }
+
+        /* Tarjeta de Seguro Médico */
+        .insurance-card { background: linear-gradient(135deg, #11253c, #1c1c1e); border: 1px solid rgba(90,200,234,0.2); border-radius: 16px; padding: 0.8rem 1rem; margin-bottom: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .insurance-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.3rem; }
+        .insurance-title { font-size: 0.82rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.04em; }
+        .insurance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem; }
+        .insurance-item { display: flex; flex-direction: column; }
+        .insurance-item span:first-child { color: var(--label2); font-size: 0.65rem; }
+        .insurance-item span:last-child { font-weight: 600; }
+
+        .section-label { font-size: 0.7rem; font-weight: 600; color: var(--label3); text-transform: uppercase; letter-spacing: 0.04em; margin: 1.2rem 0 0.4rem 0.2rem; }
+
+        /* Formulario Colapsable */
+        .form-card { background: var(--surface); border-radius: 16px; margin-bottom: 0.5rem; overflow: hidden; border: 1px solid var(--separator); }
+        .form-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; cursor: pointer; }
+        .form-toggle-row .label { font-weight: 700; font-size: 0.88rem; color: var(--label); display: flex; align-items: center; gap: 0.4rem; }
+        .form-card.open .chevron { transform: rotate(180deg); }
+        .form-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
+        .form-card.open .form-body { max-height: 950px; }
+        .form-body-inner { padding: 0.1rem 1rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.25rem; }
+        .form-group label { font-size: 0.65rem; font-weight: 600; color: var(--label3); text-transform: uppercase; }
+        .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: none; padding: 0.65rem 0.75rem; border-radius: 9px; color: var(--label); font-size: 0.9rem; outline: none; }
+        .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .btn-add { background: var(--accent); color: white; border: none; padding: 0.8rem; border-radius: 11px; font-weight: 700; font-size: 0.9rem; margin-top: 0.3rem; cursor: pointer; }
+
+        /* --- DISEÑO DE TIMELINE ESTILO iIOS --- */
+        .timeline-container { position: relative; padding-left: 1.1rem; margin-top: 0.5rem; }
+        .timeline-container::before { content: ''; position: absolute; top: 0.4rem; bottom: 0.4rem; left: 4.5px; width: 2px; background: var(--surface3); }
+
+        .timeline-card { background: var(--surface); border-radius: 14px; padding: 0.75rem 0.9rem; margin-bottom: 0.6rem; position: relative; display: flex; flex-direction: column; gap: 0.45rem; border: 1px solid rgba(255,255,255,0.03); }
+        
+        /* Nodo de la línea de tiempo */
+        .timeline-card::before { content: ''; position: absolute; top: 1rem; left: calc(-1.1rem - 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--bg); z-index: 2; }
+        .timeline-card.is-flight::before { background: var(--accent); }
+        .timeline-card.is-hotel::before { background: var(--purple); }
+        .timeline-card.is-transfer::before { background: var(--orange); }
+        .timeline-card.is-pass::before { background: var(--teal); }
+
+        .card-meta-row { display: flex; justify-content: space-between; align-items: center; }
+        .datetime-stamp { font-size: 0.72rem; font-weight: 700; color: var(--label2); text-transform: uppercase; }
+        
+        .type-badge { padding: 0.15rem 0.45rem; border-radius: 6px; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+        .is-flight .type-badge { background: rgba(0,122,255,0.15); color: #64b5ff; }
+        .is-hotel .type-badge { background: rgba(191,90,242,0.15); color: #d493f7; }
+        .is-transfer .type-badge { background: rgba(255,159,10,0.15); color: #ffb454; }
+        .is-pass .type-badge { background: rgba(90,200,234,0.15); color: #7fd6ef; }
+        .is-custom .type-badge { background: var(--surface2); color: var(--label2); }
+
+        .card-main-title { font-size: 0.95rem; font-weight: 600; line-height: 1.3; }
+        .res-code { font-family: monospace; font-size: 0.8rem; background: var(--surface2); padding: 0.1rem 0.4rem; border-radius: 5px; color: var(--green); font-weight: 700; margin-left: 0.3rem; letter-spacing: 0.05em; }
+
+        .info-strip { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; font-size: 0.78rem; color: var(--label2); background: var(--surface2); padding: 0.4rem 0.6rem; border-radius: 8px; }
+        .info-strip span { display: flex; align-items: center; gap: 0.25rem; }
+
+        /* Modulo de Sub-Checklists Integrado */
+        .subchecklist-box { border-top: 1px solid var(--separator); padding-top: 0.4rem; display: flex; flex-direction: column; gap: 0.35rem; }
+        .subchecklist-title { font-size: 0.65rem; font-weight: 700; color: var(--label3); text-transform: uppercase; letter-spacing: 0.02em; display: flex; justify-content: space-between; }
+        .task-item { display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; cursor: pointer; }
+        .task-checkbox { background: transparent; border: 1.5px solid var(--label3); width: 15px; height: 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .task-item.done { color: var(--label3); text-decoration: line-through; }
+        .task-item.done .task-checkbox { background: var(--green); border-color: var(--green); }
+        .task-checkmark { width: 8px; height: 8px; fill: white; display: none; }
+        .task-item.done .task-checkmark { display: block; }
+        
+        .add-task-inline { display: flex; gap: 0.3rem; margin-top: 0.1rem; }
+        .add-task-inline input { flex: 1; background: var(--surface2); border: none; padding: 0.3rem 0.5rem; border-radius: 6px; color: var(--label); font-size: 0.75rem; outline: none; }
+        .add-task-inline button { background: var(--surface3); border: none; color: var(--label); font-size: 0.75rem; padding: 0 0.5rem; border-radius: 6px; font-weight: 600; }
+
+        .card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.1rem; border-top: 1px solid rgba(255,255,255,0.02); padding-top: 0.35rem; }
+        .btn-action-small { background: transparent; border: none; color: var(--label3); font-size: 0.7rem; font-weight: 500; cursor: pointer; text-decoration: underline; }
+        .btn-action-small.delete-trigger { color: var(--red); }
+        .btn-wa-link { background: rgba(37,211,102,0.12); color: var(--whatsapp); padding: 0.2rem 0.5rem; border-radius: 5px; text-decoration: none; font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
+
+        .settings-footer { margin-top: 3rem; text-align: center; }
+        .btn-settings-link { background: transparent; border: none; color: var(--label3); font-size: 0.72rem; text-decoration: underline; cursor: pointer; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>TripPulse</h1>
+                <div class="subtitle">Timeline & Dependencias de Viaje</div>
+            </div>
+            <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()" title="Sincronizar Itinerario">🔄</button>
+        </header>
+
+        <div class="metrics-grid">
+            <div class="metric-box">
+                <label>A Pagar en Destino</label>
+                <div class="value pending-pay" id="valPendingPay">USD 0.00</div>
+            </div>
+            <div class="metric-box">
+                <label>Fast Pass / VIP Libres</label>
+                <div class="value" id="valVipCount">0</div>
+                <div class="counter-actions">
+                    <button class="btn-counter" onclick="changeVip(-1)">-1</button>
+                    <button class="btn-counter" onclick="changeVip(1)">+1</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="insurance-card" onclick="editInsurance()">
+            <div class="insurance-header">
+                <span class="insurance-title">🛡️ Asistencia Médica de Viaje</span>
+                <span style="font-size:0.65rem; color:var(--teal); text-decoration:underline; cursor:pointer;">Editar</span>
+            </div>
+            <div class="insurance-grid">
+                <div class="insurance-item">
+                    <span>Prestador / Póliza</span>
+                    <span id="insProvider">Completar datos</span>
+                </div>
+                <div class="insurance-item">
+                    <span>Vigencia / Cobertura</span>
+                    <span id="insCoverage">Sin registrar</span>
+                </div>
+            </div>
+            <div style="font-size: 0.72rem; color: var(--label2); margin-top: 0.1rem; line-height: 1.25;" id="insNotes">
+                Pulsá acá para registrar el alcance, teléfonos de emergencia y documentos adjuntos de tu asistencia al viajero.
+            </div>
+        </div>
+
+        <div class="form-card" id="formCard">
+            <div class="form-toggle-row" onclick="toggleForm()">
+                <span class="label">➕ Añadir hito o reserva al Timeline</span>
+                <span class="chevron" style="font-size:0.7rem; color:var(--label3);">▼</span>
+            </div>
+            <div class="form-body">
+                <div class="form-body-inner">
+                    <div class="row-inputs">
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <select id="fType">
+                                <option value="flight">✈️ Vuelo</option>
+                                <option value="hotel">🏨 Alojamiento</option>
+                                <option value="transfer">🚗 Traslado / Conexión</option>
+                                <option value="pass">🎫 Pase / Acceso Especial</option>
+                                <option value="custom">📌 Recordatorio / Tarea</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Título / Descripción</label>
+                            <input type="text" id="fTitle" placeholder="Ej: Vuelo Jetsmart JA732">
+                        </div>
+                    </div>
+                    <div class="row-inputs">
+                        <div class="form-group">
+                            <label>Fecha de Inicio</label>
+                            <input type="date" id="fDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Hora (24hs)</label>
+                            <input type="time" id="fTime">
+                        </div>
+                    </div>
+                    <div class="row-inputs">
+                        <div class="form-group">
+                            <label>Código Reserva (opcional)</label>
+                            <input type="text" id="fCode" placeholder="Ej: GEB5VX">
+                        </div>
+                        <div class="form-group">
+                            <label>Monto a pagar allá (USD)</label>
+                            <input type="number" id="fCost" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notas / Detalles (Equipaje, dirección, etc.)</label>
+                        <textarea id="fNotes" rows="2" placeholder="Ej: 1 valija de ida. Dominican Transfer WA..."></textarea>
+                    </div>
+                    <button class="btn-add" onclick="addMilestone()">Insertar en Itinerario</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">🗺️ Itinerario del Viaje</div>
+        <div class="timeline-container" id="timelineContainer"></div>
+
+        <div class="settings-footer">
+            <button class="btn-settings-link" onclick="forceSetupCredentials()">⚙️ Enlazar Base de Datos en la Nube (Gist)</button>
+        </div>
+    </div>
+
+    <script>
+        // SEED DATA REAL PROPORCIONADA EN EL BRIEF
+        const DEFAULT_SEED = {
+            vipPasses: 2,
+            insurance: {
+                provider: "Universal Assistance",
+                coverage: "17 Jul - 04 Ago / Alcance Global",
+                notes: "Teléfono emergencias: +1... Documentos guardados en Drive corporativo."
+            },
+            milestones: [
+                { id: "m1", type: "pass", title: "Fast Pass Migraciones", date: "2026-07-17", time: "14:15", code: "", cost: 0, notes: "Hora reservada confirmada para evitar colas de salida.", checklist: [{text:"Llevar QR impreso", done:false}] },
+                { id: "m2", type: "flight", title: "Vuelo Jetsmart JA 732 (AEP -> SCL)", date: "2026-07-17", time: "16:30", code: "GEB5VX", cost: 0, notes: "Llega 17:46. Equipaje permitido: 1 valija de ida.", checklist: [{text:"Hacer check-in 24hs antes", done:true}, {text:"Pesar mochila de mano", done:false}] },
+                { id: "m3", type: "flight", title: "Vuelo Arajet (SCL -> PUJ)", date: "2026-07-18", time: "00:01", code: "VNLKSD", cost: 0, notes: "Llega 08:01am a Punta Cana. Equipaje: 3 valijas totales permitidas.", checklist: [] },
+                { id: "m4", type: "transfer", title: "Dominican Transfer al Hotel (Bayahibe)", date: "2026-07-18", time: "08:30", code: "", cost: 150, notes: "Contacto WhatsApp: +18299174178. Costo: USD 150 a pagar en efectivo.", checklist: [{text:"Cambiar billetes chicos de USD", done:false}] },
+                { id: "m5", type: "hotel", title: "Reserva Hotel Bayahibe (Deluxe Tropical)", date: "2026-07-18", time: "15:00", code: "hft6wp2uw", cost: 0, notes: "Salida: 30/07/2026. Regimen Todo Incluido. Ya se encuentra pago por completo (USD 2,508.00).", checklist: [] },
+                { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [] },
+                { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", checklist: [] },
+                { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [] },
+                { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [] }
+            ]
+        };
+
+        let travelState = JSON.parse(localStorage.getItem('trippulse_state_v1')) || DEFAULT_SEED;
+
+        function save() {
+            localStorage.setItem('trippulse_state_v1', JSON.stringify(travelState));
+            autoPushToCloud();
+            render();
+        }
+
+        function toggleForm() {
+            document.getElementById('formCard').classList.toggle('open');
+        }
+
+        function changeVip(amount) {
+            travelState.vipPasses = Math.max(0, travelState.vipPasses + amount);
+            save();
+        }
+
+        function editInsurance() {
+            const provider = prompt("Nombre del Seguro / Nro Póliza:", travelState.insurance.provider);
+            const coverage = prompt("Vigencia / Alcance:", travelState.insurance.coverage);
+            const notes = prompt("Detalles adicionales / Números de emergencia:", travelState.insurance.notes);
+            
+            if (provider !== null && coverage !== null && notes !== null) {
+                travelState.insurance = { provider, coverage, notes };
+                save();
+            }
+        }
+
+        function addMilestone() {
+            const type = document.getElementById('fType').value;
+            const title = document.getElementById('fTitle').value.trim();
+            const date = document.getElementById('fDate').value;
+            const time = document.getElementById('fTime').value || "12:00";
+            const code = document.getElementById('fCode').value.trim();
+            const cost = parseFloat(document.getElementById('fCost').value) || 0;
+            const notes = document.getElementById('fNotes').value.trim();
+
+            if (!title || !date) {
+                alert("Por favor completá el título y la fecha del hito.");
+                return;
+            }
+
+            travelState.milestones.push({
+                id: 'custom_' + Date.now(),
+                type, title, date, time, code, cost, notes,
+                checklist: []
+            });
+
+            // Limpieza de campos
+            document.getElementById('fTitle').value = '';
+            document.getElementById('fCode').value = '';
+            document.getElementById('fCost').value = '';
+            document.getElementById('fNotes').value = '';
+            
+            toggleForm();
+            save();
+        }
+
+        function deleteMilestone(id) {
+            if(confirm("¿Seguro que querés remover esta reserva o hito del viaje?")) {
+                travelState.milestones = travelState.milestones.filter(m => m.id !== id);
+                save();
+            }
+        }
+
+        function toggleTask(milestoneId, taskIndex) {
+            const milestone = travelState.milestones.find(m => m.id === milestoneId);
+            if(milestone && milestone.checklist[taskIndex]) {
+                milestone.checklist[taskIndex].done = !milestone.checklist[taskIndex].done;
+                save();
+            }
+        }
+
+        function addTaskInline(e, milestoneId) {
+            if (e.key === 'Enter' || e.type === 'click') {
+                const input = document.getElementById(`input_add_${milestoneId}`);
+                const text = input.value.trim();
+                if(!text) return;
+
+                const milestone = travelState.milestones.find(m => m.id === milestoneId);
+                if(milestone) {
+                    if(!milestone.checklist) milestone.checklist = [];
+                    milestone.checklist.push({ text, done: false });
+                    input.value = '';
+                    save();
+                }
+            }
+        }
+
+        function formatDisplayDate(dateStr) {
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
+            // Forzar formateo local sin desfases de huso horario
+            const parts = dateStr.split('-');
+            const date = new Date(parts[0], parts[1] - 1, parts[2]);
+            return date.toLocaleDateString('es-AR', options);
+        }
+
+        /* ========================================================
+           ☁️ MOTOR AUTO-SYNC INTEGRADO (COMPARTIDO CON LA WISHLIST)
+           ======================================================== */
+        function forceSetupCredentials() {
+            const token = prompt("Ingresá tu GitHub Token (PAT):", localStorage.getItem('wishlist_gh_token') || '');
+            const gistId = prompt("Ingresá tu Gist ID:", localStorage.getItem('wishlist_gh_gist') || '');
+            if(token && gistId) {
+                localStorage.setItem('wishlist_gh_token', token.trim());
+                localStorage.setItem('wishlist_gh_gist', gistId.trim());
+                manualSync();
+            }
+        }
+
+        function getSyncCredentials() {
+            return {
+                token: localStorage.getItem('wishlist_gh_token'),
+                gistId: localStorage.getItem('wishlist_gh_gist')
+            };
+        }
+
+        async function autoPullFromCloud() {
+            const creds = getSyncCredentials();
+            if(!creds.token || !creds.gistId) return;
+
+            const syncBtn = document.getElementById('btnCloudSync');
+            if(syncBtn) syncBtn.classList.add('spinning');
+
+            try {
+                const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
+                    headers: { 'Authorization': `token ${creds.token}` }
+                });
+                if(res.ok) {
+                    const gistData = await res.json();
+                    if(gistData.files["travel_timeline.json"]) {
+                        const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
+                        if(cloudContent && Array.isArray(cloudContent.milestones)) {
+                            travelState = cloudContent;
+                            localStorage.setItem('trippulse_state_v1', JSON.stringify(travelState));
+                            render();
+                        }
+                    }
+                }
+            } catch(e) { console.log("Descarga silenciosa fallida:", e); }
+            finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
+        }
+
+        async function autoPushToCloud() {
+            const creds = getSyncCredentials();
+            if(!creds.token || !creds.gistId) return;
+
+            const syncBtn = document.getElementById('btnCloudSync');
+            if(syncBtn) syncBtn.classList.add('spinning');
+
+            try {
+                await fetch(`https://api.github.com/gists/${creds.gistId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `token ${creds.token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        files: { "travel_timeline.json": { content: JSON.stringify(travelState, null, 2) } }
+                    })
+                });
+            } catch(e) { console.log("Subida silenciosa fallida:", e); }
+            finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
+        }
+
+        async function manualSync() {
+            await autoPullFromCloud();
+            await autoPushToCloud();
+        }
+
+        function render() {
+            // Actualizar Widget Fijo de Seguro
+            document.getElementById('insProvider').textContent = travelState.insurance.provider || "Completar";
+            document.getElementById('insCoverage').textContent = travelState.insurance.coverage || "Completar";
+            document.getElementById('insNotes').textContent = travelState.insurance.notes || "";
+            document.getElementById('valVipCount').textContent = travelState.vipPasses;
+
+            // Ordenamiento cronológico automático crítico antes del renderizado
+            travelState.milestones.sort((a, b) => {
+                const dateA = a.date + 'T' + a.time;
+                const dateB = b.date + 'T' + b.time;
+                return dateA.localeCompare(dateB);
+            });
+
+            let totalPendingPay = 0;
+            const container = document.getElementById('timelineContainer');
+            container.innerHTML = '';
+
+            if (travelState.milestones.length === 0) {
+                container.innerHTML = `<div class="empty-state">No hay hitos cargados en la línea de tiempo.</div>`;
+                document.getElementById('valPendingPay').textContent = "USD 0.00";
+                return;
+            }
+
+            travelState.milestones.forEach((milestone) => {
+                totalPendingPay += milestone.cost;
+
+                // Bloque HTML de Checklist interno
+                let checklistHtml = '';
+                if(milestone.checklist && milestone.checklist.length > 0) {
+                    const itemsHtml = milestone.checklist.map((task, idx) => `
+                        <div class="task-item ${task.done ? 'done' : ''}" onclick="toggleTask('${milestone.id}', ${idx})">
+                            <div class="task-checkbox">
+                                <svg class="task-checkmark" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
+                            </div>
+                            <span>${task.text}</span>
+                        </div>
+                    `).join('');
+                    checklistHtml = `<div class="subchecklist-box">${itemsHtml}</div>`;
+                }
+
+                // Parser para link dinámico de WhatsApp si se detecta número en la nota
+                let waButtonHtml = '';
+                const waMatch = milestone.notes.match(/\+1\s?\(?\d{3}\)?\s?\d{3}-?\d{4}/) || milestone.notes.match(/\+\d{10,13}/);
+                if (waMatch) {
+                    const cleanNum = waMatch[0].replace(/[^0-9+]/g, '');
+                    waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA Link</a>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `timeline-card is-${milestone.type}`;
+                card.innerHTML = `
+                    <div class="card-meta-row">
+                        <span class="datetime-stamp">${formatDisplayDate(milestone.date)} — ${milestone.time} hs</span>
+                        <span class="type-badge">${milestone.type}</span>
+                    </div>
+                    <div class="card-main-title">
+                        ${milestone.title}
+                        ${milestone.code ? `<span class="res-code">${milestone.code}</span>` : ''}
+                    </div>
+                    
+                    <div class="info-strip">
+                        ${milestone.cost > 0 ? `<span style="color:var(--orange); font-weight:700;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</span>` : '<span style="color:var(--green)">🟢 Pago / Concedido</span>'}
+                        <span>${milestone.notes}</span>
+                    </div>
+
+                    <div class="subchecklist-box" onclick="event.stopPropagation()">
+                        <div class="subchecklist-title">
+                            <span>Dependencias / Checklist</span>
+                            <span>${milestone.checklist ? milestone.checklist.filter(c=>c.done).length : 0}/${milestone.checklist ? milestone.checklist.length : 0}</span>
+                        </div>
+                        ${checklistHtml}
+                        <div class="add-task-inline">
+                            <input type="text" id="input_add_${milestone.id}" placeholder="Añadir pendiente previo..." onkeypress="addTaskInline(event, '${milestone.id}')">
+                            <button onclick="addTaskInline(event, '${milestone.id}')">＋</button>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        ${waButtonHtml}
+                        <button class="btn-action-small delete-trigger" onclick="deleteMilestone('${milestone.id}')">Eliminar</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('valPendingPay').textContent = `USD ${totalPendingPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        window.onload = async function() {
+            render();
+            await autoPullFromCloud();
+        };
+
+        document.addEventListener("visibilitychange", async () => {
+            if (!document.hidden) {
+                await autoPullFromCloud();
+            }
+        });
+    </script>
+</body>
+</html>
