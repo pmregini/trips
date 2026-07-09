@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v3.7</title>
+    <title>TripPulse v4.0</title>
     <link class="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -155,7 +155,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v3.7</span></h1>
+                <h1>TripPulse <span class="version-badge">v4.0</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -304,6 +304,7 @@
 
         if (!globalState) {
             globalState = {
+                updatedAt: 0,
                 activeTripId: "trip_bayahibe",
                 trips: [{
                     id: "trip_bayahibe",
@@ -318,6 +319,7 @@
             };
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
         }
+        if (!globalState.updatedAt) globalState.updatedAt = 0;
 
         function getSyncCredentials() {
             let token = localStorage.getItem('wishlist_gh_token');
@@ -339,18 +341,20 @@
             return trip;
         }
 
-        function save() {
+        /* 📡 LOGICA ATÓMICA DE MUTACIÓN SECUENCIAL v4.0 */
+        async function save() {
+            globalState.updatedAt = Date.now();
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
-            autoPushToCloud();
             render();
+            await autoPushToCloud();
         }
 
-        function changeTripContext(id) {
+        async function changeTripContext(id) {
             globalState.activeTripId = id;
-            save();
+            await save();
         }
 
-        function createNewTripContext() {
+        async function createNewTripContext() {
             const name = prompt("Ingresá el destino o nombre del nuevo viaje:");
             if (!name || !name.trim()) return;
             const newId = "trip_" + Date.now();
@@ -365,10 +369,10 @@
                 milestones: []
             });
             globalState.activeTripId = newId;
-            save();
+            await save();
         }
 
-        function deleteCurrentTripContext() {
+        async function deleteCurrentTripContext() {
             if (globalState.trips.length <= 1) {
                 alert("No podés eliminar tu único viaje activo.");
                 return;
@@ -377,7 +381,7 @@
             if (confirm(`¿Seguro que querés borrar por completo el viaje "${activeTrip.name}"?`)) {
                 globalState.trips = globalState.trips.filter(t => t.id !== activeTrip.id);
                 globalState.activeTripId = globalState.trips[0].id;
-                save();
+                await save();
             }
         }
 
@@ -386,33 +390,33 @@
             card.classList.toggle('open');
         }
 
-        function updateCardCounter(cardId, amount) {
+        async function updateCardCounter(cardId, amount) {
             const trip = getActiveTrip();
             const card = trip.cards.find(c => c.id === cardId);
             if (card) {
                 card.passes = Math.max(0, card.passes + amount);
-                save();
+                await save();
             }
         }
 
-        function deleteCardInline(cardId) {
+        async function deleteCardInline(cardId) {
             const trip = getActiveTrip();
             const card = trip.cards.find(c => c.id === cardId);
             if (card && confirm(`¿Seguro que querés eliminar la tarjeta "${card.name}"?`)) {
                 trip.cards = trip.cards.filter(c => c.id !== cardId);
-                save();
+                await save();
             }
         }
 
-        function addNewCardInline() {
+        async function addNewCardInline() {
             const name = prompt("Nombre o Banco de la nueva tarjeta:");
             if(!name || !name.trim()) return;
             const trip = getActiveTrip();
             trip.cards.push({ id: "c_" + Date.now(), name: name.trim(), passes: 0 });
-            save();
+            await save();
         }
 
-        function editInsurance() {
+        async function editInsurance() {
             const trip = getActiveTrip();
             const provider = prompt("Nombre del Seguro / Nro Póliza:", trip.insurance.provider);
             const coverage = prompt("Vigencia / Alcance:", trip.insurance.coverage);
@@ -420,7 +424,7 @@
             
             if (provider !== null && coverage !== null && notes !== null) {
                 trip.insurance = { provider, coverage, notes };
-                save();
+                await save();
             }
         }
 
@@ -496,48 +500,48 @@
             btn.textContent = "Insertar en Itinerario";
             
             toggleForm();
-            save();
+            await save();
         }
 
-        function deleteMilestone(id) {
+        async function deleteMilestone(id) {
             if(confirm("¿Remover esta reserva o hito del viaje?")) {
                 const trip = getActiveTrip();
                 trip.milestones = trip.milestones.filter(m => m.id !== id);
-                save();
+                await save();
             }
         }
 
-        function toggleMilestonePassed(id) {
+        async function toggleMilestonePassed(id) {
             const trip = getActiveTrip();
             const milestone = trip.milestones.find(m => m.id === id);
             if(milestone) {
                 milestone.passed = !milestone.passed;
-                save();
+                await save();
             }
         }
 
-        function editMilestoneNotes(id) {
+        async function editMilestoneNotes(id) {
             const trip = getActiveTrip();
             const milestone = trip.milestones.find(m => m.id === id);
             if (milestone) {
                 const newNotes = prompt(`Editar notas para "${milestone.title}":`, milestone.notes || '');
                 if (newNotes !== null) {
                     milestone.notes = newNotes.trim();
-                    save();
+                    await save();
                 }
             }
         }
 
-        function toggleTask(milestoneId, taskIndex) {
+        async function toggleTask(milestoneId, taskIndex) {
             const trip = getActiveTrip();
             const milestone = trip.milestones.find(m => m.id === milestoneId);
             if(milestone && milestone.checklist[taskIndex]) {
                 milestone.checklist[taskIndex].done = !milestone.checklist[taskIndex].done;
-                save();
+                await save();
             }
         }
 
-        function addTaskInline(e, milestoneId) {
+        async function addTaskInline(e, milestoneId) {
             if (e.key === 'Enter' || e.type === 'click') {
                 const input = document.getElementById(`input_add_${milestoneId}`);
                 const text = input.value.trim();
@@ -549,7 +553,7 @@
                     if(!milestone.checklist) milestone.checklist = [];
                     milestone.checklist.push({ text, done: false });
                     input.value = '';
-                    save();
+                    await save();
                 }
             }
         }
@@ -592,8 +596,9 @@
             return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}`;
         }
 
-        async function autoPullFromCloud() {
-            if(isSyncingLock) return;
+        /* 📡 TIMESTAMP RESOLUTION: LA NUBE SOLO GANA SI TIENE UN TIMESTAMP SUPERIOR v4.0 */
+        async function autoPullFromCloud(isForcedManual = false) {
+            if(isSyncingLock && !isForcedManual) return;
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
             const syncBtn = document.getElementById('btnCloudSync');
@@ -607,19 +612,24 @@
                     const gistData = await res.json();
                     if(gistData.files && gistData.files["travel_timeline.json"]) {
                         const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
-                        if(cloudContent && Array.isArray(cloudContent.trips)) {
+                        const cloudUpdatedAt = cloudContent.updatedAt || 0;
+                        
+                        if(cloudUpdatedAt > globalState.updatedAt || isForcedManual) {
                             globalState = cloudContent;
                             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
                             render();
+                        } else if(globalState.updatedAt > cloudUpdatedAt) {
+                            await autoPushToCloud(true);
                         }
                     }
                 }
             } catch(e) { 
-                console.log("Error controlado de descarga pasiva."); 
+                console.log("Descarga pasiva amortiguada."); 
             } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
         }
 
-        async function autoPushToCloud() {
+        async function autoPushToCloud(bypassLock = false) {
+            if(isSyncingLock && !bypassLock) return;
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return;
             isSyncingLock = true;
@@ -637,7 +647,7 @@
                     })
                 });
             } catch(e) { 
-                console.log("Fallo asincrónico plano mitigado.");
+                console.log("Escritura pasiva amortiguada.");
             } finally { 
                 isSyncingLock = false;
                 if(syncBtn) syncBtn.classList.remove('spinning'); 
@@ -650,11 +660,9 @@
                 forceSetupCredentials();
                 return;
             }
-            isSyncingLock = true;
-            await autoPullFromCloud();
-            await autoPushToCloud();
-            isSyncingLock = false;
-            alert("🔄 Sincronización exitosa con la nube.");
+            await autoPullFromCloud(true);
+            await autoPushToCloud(true);
+            alert("🔄 Itinerario sincronizado con éxito.");
         }
 
         function buildMilestoneCardHtml(milestone) {
@@ -817,12 +825,6 @@
             render();
             await autoPullFromCloud();
         };
-
-        document.addEventListener("visibilitychange", async () => {
-            if (!document.hidden) {
-                await autoPullFromCloud();
-            }
-        });
     </script>
 </body>
 </html>
