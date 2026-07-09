@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v2.1</title>
+    <title>TripPulse v2.2</title>
     <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -46,12 +46,10 @@
         .btn-cloud-sync { background: var(--surface2); border: 1px solid var(--surface3); color: var(--purple); width: 36px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
         .btn-cloud-sync.spinning { animation: spin 0.8s linear infinite; color: var(--green); }
 
-        /* Barra de presupuesto rápido arriba */
         .budget-bar { background: var(--surface); border-radius: 12px; padding: 0.6rem 0.9rem; margin-bottom: 0.45rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,159,10,0.15); }
         .budget-bar label { font-size: 0.72rem; color: var(--label2); font-weight: 600; text-transform: uppercase; }
         .budget-bar .value { font-size: 1.1rem; font-weight: 700; color: var(--orange); font-variant-numeric: tabular-nums; }
 
-        /* Bloques Desplegables de Configuración iOS Style */
         .collapsible-panel { background: var(--surface2); border: 1px solid var(--surface3); border-radius: 14px; margin-bottom: 0.45rem; overflow: hidden; }
         .collapsible-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.9rem; cursor: pointer; }
         .collapsible-title { font-size: 0.75rem; font-weight: 700; color: var(--label); text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 0.3rem; }
@@ -61,13 +59,11 @@
         .collapsible-panel.open .chevron { transform: rotate(180deg); }
         .collapsible-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
 
-        /* Estilos del Seguro Médico Interno */
         .insurance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem; background: var(--surface); padding: 0.5rem; border-radius: 9px; }
         .insurance-item { display: flex; flex-direction: column; }
         .insurance-item span:first-child { color: var(--label2); font-size: 0.62rem; }
         .insurance-item span:last-child { font-weight: 600; }
 
-        /* Estilos de Tarjetas de Crédito / VIP Interno */
         .card-row-item { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 0.45rem 0.6rem; border-radius: 9px; border-left: 3px solid var(--teal); }
         .card-row-name { font-size: 0.85rem; font-weight: 600; }
         .card-row-controls { display: flex; align-items: center; gap: 0.45rem; }
@@ -121,7 +117,12 @@
         .card-main-title { font-size: 0.92rem; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .res-code { font-family: monospace; font-size: 0.78rem; background: var(--surface2); padding: 0.05rem 0.35rem; border-radius: 4px; color: var(--green); font-weight: 700; letter-spacing: 0.04em; }
 
-        .info-strip { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.78rem; color: var(--label2); background: var(--surface2); padding: 0.4rem 0.55rem; border-radius: 7px; }
+        /* Estructura CSS de Notas Colapsables v2.2 */
+        .notes-dropdown { margin-top: 0.1rem; font-size: 0.76rem; }
+        .notes-summary { color: var(--accent); font-weight: 600; cursor: pointer; outline: none; list-style: none; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .notes-summary::-webkit-details-marker { display: none; }
+        .dimmed-dropdown .notes-summary { color: var(--label3); cursor: default; }
+        .notes-content { background: var(--surface2); padding: 0.4rem 0.55rem; border-radius: 7px; color: var(--label2); margin-top: 0.2rem; white-space: pre-wrap; line-height: 1.35; border-left: 2px solid var(--surface3); }
 
         .subchecklist-box { border-top: 1px solid var(--separator); padding-top: 0.35rem; display: flex; flex-direction: column; gap: 0.3rem; }
         .subchecklist-title { font-size: 0.62rem; font-weight: 700; color: var(--label3); text-transform: uppercase; letter-spacing: 0.02em; display: flex; justify-content: space-between; }
@@ -199,8 +200,7 @@
                 <span class="chevron">▼</span>
             </div>
             <div class="collapsible-body">
-                <div class="collapsible-body-inner" id="vipCardsContainer">
-                    </div>
+                <div class="collapsible-body-inner" id="vipCardsContainer"></div>
             </div>
         </div>
 
@@ -269,8 +269,10 @@
             </div>
         </div>
 
-        <div class="settings-footer">
-            <button class="btn-settings-link" onclick="forceSetupCredentials()">⚙️ Enlazar Base de Datos en la Nube (Gist)</button>
+        <!-- Panel de Configuración e Identificadores Camuflados v2.2 -->
+        <div class="settings-footer" style="margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3);">
+            <span>TripPulse v2.2 • 2026 • </span>
+            <span style="cursor: pointer; text-decoration: underline;" onclick="forceSetupCredentials()">Cloud Config</span>
         </div>
     </div>
 
@@ -309,8 +311,6 @@
         function getActiveTrip() {
             let trip = globalState.trips.find(t => t.id === globalState.activeTripId);
             if(!trip) { trip = globalState.trips[0]; globalState.activeTripId = trip.id; }
-            
-            // Garantizar estructura v2.1 para soporte multi-tarjeta sobre bases v2.0
             if(!trip.cards) {
                 trip.cards = [ { id: "c_" + Date.now(), name: "Pases VIP Disponibles", passes: trip.vipPasses || 0 } ];
                 delete trip.vipPasses;
@@ -364,7 +364,6 @@
             document.getElementById('formCard').classList.toggle('open');
         }
 
-        /* 💳 CONTROLADORES DEL PASE MULTI-TARJETA IN-APP v2.1 */
         function updateCardCounter(cardId, amount) {
             const trip = getActiveTrip();
             const card = trip.cards.find(c => c.id === cardId);
@@ -378,11 +377,7 @@
             const name = prompt("Nombre o Banco de la nueva tarjeta:");
             if(!name || !name.trim()) return;
             const trip = getActiveTrip();
-            trip.cards.push({
-                id: "c_" + Date.now(),
-                name: name.trim(),
-                passes: 0
-            });
+            trip.cards.push({ id: "c_" + Date.now(), name: name.trim(), passes: 0 });
             save();
         }
 
@@ -486,9 +481,29 @@
             text += `*Fecha/Hora:* ${formatDisplayDate(item.date)} a las ${item.time}hs\n`;
             if(item.code) text += `*Código de Reserva:* ${item.code}\n`;
             if(item.cost > 0) text += `*Monto pendiente:* USD ${item.cost}\n`;
-            text += `*Detalles:* ${item.notes}\n`;
+            if(item.notes) text += `*Detalles:* ${item.notes}\n`;
 
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        /* 🔥 MOTOR WEB INTENT DE CALENDARIO GOOGLE v2.2 */
+        function getGoogleCalendarUrl(milestone) {
+            const base = "https://calendar.google.com/calendar/render?action=TEMPLATE";
+            const title = `TripPulse [${milestone.type.toUpperCase()}]: ${milestone.title}`;
+            
+            const cleanDate = milestone.date.replace(/-/g, '');
+            const cleanTime = milestone.time.replace(/:/g, '');
+            const startStr = `${cleanDate}T${cleanTime}00`;
+            
+            let hour = parseInt(milestone.time.split('_')[0]) + 1;
+            if (isNaN(hour) || hour >= 24) hour = 12;
+            const endStr = `${cleanDate}T${String(hour).padStart(2, '0')}0000`;
+            
+            let details = milestone.notes || '';
+            if(milestone.code) details += `\nReserva: ${milestone.code}`;
+            if(milestone.cost > 0) details += `\n💰 Pendiente: USD ${milestone.cost}`;
+            
+            return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}`;
         }
 
         function forceSetupCredentials() {
@@ -565,12 +580,36 @@
                 checklistHtml = `<div class="subchecklist-box">${itemsHtml}</div>`;
             }
 
+            const notesText = milestone.notes || '';
             let waButtonHtml = '';
-            const waMatch = milestone.notes.match(/\+1\s?\(?\d{3}\)?\s?\d{3}-?\d{4}/) || milestone.notes.match(/\+\d{10,13}/);
+            const waMatch = notesText.match(/\+1\s?\(?\d{3}\)?\s?\d{3}-?\d{4}/) || notesText.match(/\+\d{10,13}/);
             if (waMatch) {
                 const cleanNum = waMatch[0].replace(/[^0-9+]/g, '');
                 waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
             }
+
+            const costHtml = milestone.cost > 0 
+                ? `<div style="font-size: 0.74rem; color:var(--orange); font-weight:700; background: var(--surface2); padding: 0.35rem 0.55rem; border-radius: 6px; display: inline-block;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</div>` 
+                : `<div style="font-size: 0.74rem; color:var(--green); background: var(--surface2); padding: 0.35rem 0.55rem; border-radius: 6px; display: inline-block;">🟢 Sin pagos pendientes</div>`;
+
+            /* 📝 CONTRALOR LOGICO DE DESPLEGABLE CON INDICADOR EN SUMMARY v2.2 */
+            let notesHtml = '';
+            if (notesText.trim()) {
+                notesHtml = `
+                    <details class="notes-dropdown">
+                        <summary class="notes-summary">📝 Ver Notas</summary>
+                        <div class="notes-content">${milestone.notes}</div>
+                    </details>
+                `;
+            } else {
+                notesHtml = `
+                    <div class="notes-dropdown dimmed-dropdown">
+                        <span class="notes-summary">📝 Sin notas</span>
+                    </div>
+                `;
+            }
+
+            const googleCalUrl = getGoogleCalendarUrl(milestone);
 
             return `
                 <div class="card-meta-row">
@@ -587,10 +626,8 @@
                     </div>
                 </div>
                 
-                <div class="info-strip">
-                    ${milestone.cost > 0 ? `<span style="color:var(--orange); font-weight:700;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</span>` : '<span style="color:var(--green)">🟢 Sin pagos pendientes</span>'}
-                    <span>${milestone.notes}</span>
-                </div>
+                ${costHtml}
+                ${notesHtml}
 
                 <div class="subchecklist-box" onclick="event.stopPropagation()">
                     <div class="subchecklist-title">
@@ -606,6 +643,7 @@
 
                 <div class="card-actions">
                     ${waButtonHtml}
+                    <a href="${googleCalUrl}" target="_blank" class="btn-action-small" style="color:var(--teal); text-decoration:none; font-weight:600;">📅 Google Cal</a>
                     <button class="btn-action-small" onclick="shareWhatsApp('${milestone.id}')">Compartir</button>
                     <button class="btn-action-small delete-trigger" onclick="deleteMilestone('${milestone.id}')">Eliminar</button>
                 </div>
@@ -618,12 +656,10 @@
             const select = document.getElementById('tripSelector');
             select.innerHTML = globalState.trips.map(t => `<option value="${t.id}" ${t.id === globalState.activeTripId ? 'selected' : ''}>📌 ${t.name}</option>`).join('');
 
-            // Renderizar datos del Seguro Médico
             document.getElementById('insProvider').textContent = trip.insurance.provider || "Sin registrar";
             document.getElementById('insCoverage').textContent = trip.insurance.coverage || "Sin registrar";
             document.getElementById('insNotes').textContent = trip.insurance.notes || "No hay observaciones extras.";
 
-            // 🔥 RENDERIZADO DINÁMICO MULTI-TARJETA v2.1
             const cardBox = document.getElementById('vipCardsContainer');
             cardBox.innerHTML = trip.cards.map(c => `
                 <div class="card-row-item">
