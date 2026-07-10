@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TripPulse v4.7</title>
-    <link class="apple-touch-icon" href="https://fav.farm/✈️">
+    <title>TripPulse v4.4</title>
+    <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
@@ -81,6 +81,7 @@
         .form-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
         .form-card.open .form-body { max-height: 950px; }
         .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
         .form-group { display: flex; flex-direction: column; gap: 0.2rem; }
         .form-group label { font-size: 0.62rem; font-weight: 600; color: var(--label3); text-transform: uppercase; }
         .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: none; padding: 0.6rem 0.7rem; border-radius: 8px; color: var(--label); font-size: 0.85rem; outline: none; }
@@ -136,11 +137,11 @@
         .add-task-inline input { flex: 1; background: var(--surface2); border: none; padding: 0.25rem 0.45rem; border-radius: 5px; color: var(--label); font-size: 0.72rem; outline: none; }
         .add-task-inline button { background: var(--surface3); border: none; color: var(--label); font-size: 0.72rem; padding: 0 0.45rem; border-radius: 5px; font-weight: 600; }
 
-        .card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.1rem; border-top: 1px solid rgba(255,255,255,0.02); padding-top: 0.3rem; flex-wrap: wrap; }
+        .card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.1rem; border-top: 1px solid rgba(255,255,255,0.02); padding-top: 0.3rem; }
         .btn-action-small { background: transparent; border: none; color: var(--label3); font-size: 0.68rem; font-weight: 500; cursor: pointer; text-decoration: underline; }
         .btn-action-small.delete-trigger { color: var(--red); }
         .btn-wa-link { background: rgba(37,211,102,0.12); color: var(--whatsapp); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
-        .btn-map-link { background: rgba(0,122,255,0.15); color: #64b5ff; padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .btn-map-link { background: rgba(90,200,234,0.12); color: var(--orange); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
 
         .history-card { background: var(--surface); border-radius: 14px; margin-top: 0.8rem; border: 1px dashed var(--surface3); overflow: hidden; }
         .history-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; padding: 0; }
@@ -156,7 +157,7 @@
     <div class="container">
         <header>
             <div>
-                <h1>TripPulse <span class="version-badge">v4.7</span></h1>
+                <h1>TripPulse <span class="version-badge">v4.4</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
             <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
@@ -265,7 +266,7 @@
                         <input type="file" id="fMedia" accept="image/*" style="background:transparent; padding:0;">
                     </div>
                     <div class="form-group">
-                        <label>Notes / Detalles</label>
+                        <label>Notas / Detalles</label>
                         <textarea id="fNotes" rows="2"></textarea>
                     </div>
                     <button class="btn-add" id="btnAddMilestone" onclick="addMilestone()">Insertar en Itinerario</button>
@@ -304,6 +305,16 @@
             { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], hasPayment: false }
         ];
 
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         let isFreshInstall = !localStorage.getItem('trippulse_global_v2');
         let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
         let isSyncingLock = false;
@@ -335,6 +346,22 @@
                 localStorage.setItem('wishlist_gh_gist', gistId);
             }
             return { token, gistId };
+        }
+
+        async function forceSetupCredentials() {
+            const current = getSyncCredentials();
+            const token = prompt("Pegá tu GitHub Personal Access Token (con permiso 'gist'):", current.token || '');
+            if (token === null) return;
+            const gistId = prompt("Pegá el ID del Gist a usar para sincronizar:", current.gistId || '');
+            if (gistId === null) return;
+            if (!token.trim() || !gistId.trim()) {
+                alert("Token y Gist ID son obligatorios para sincronizar.");
+                return;
+            }
+            localStorage.setItem('wishlist_gh_token', token.trim());
+            localStorage.setItem('wishlist_gh_gist', gistId.trim());
+            alert("Credenciales guardadas. Sincronizando...");
+            await manualSync();
         }
 
         function getActiveTrip() {
@@ -527,37 +554,16 @@
             }
         }
 
-        async function editMilestone(id) {
+        async function editMilestoneNotes(id) {
             const trip = getActiveTrip();
             const milestone = trip.milestones.find(m => m.id === id);
-            if (!milestone) return;
-
-            const newTitle = prompt("Editar Título del hito:", milestone.title || "");
-            if (newTitle === null) return; 
-
-            const newDate = prompt("Editar Fecha (AAAA-MM-DD):", milestone.date || "");
-            if (newDate === null) return;
-
-            const newTime = prompt("Editar Hora (HH:MM):", milestone.time || "12:00");
-            if (newTime === null) return;
-
-            const newAddress = prompt("Editar Dirección / Ubicación:", milestone.address || "");
-            if (newAddress === null) return;
-
-            const newCode = prompt("Editar Código de Reserva:", milestone.code || "");
-            if (newCode === null) return;
-
-            const newNotes = prompt("Editar Notas / Detalles:", milestone.notes || "");
-            if (newNotes === null) return;
-
-            milestone.title = newTitle.trim() || milestone.title;
-            milestone.date = newDate.trim() || milestone.date;
-            milestone.time = newTime.trim() || milestone.time;
-            milestone.address = newAddress.trim();
-            milestone.code = newCode.trim().toUpperCase();
-            milestone.notes = newNotes.trim();
-
-            await save();
+            if (milestone) {
+                const newNotes = prompt(`Editar notas para "${milestone.title}":`, milestone.notes || '');
+                if (newNotes !== null) {
+                    milestone.notes = newNotes.trim();
+                    await save();
+                }
+            }
         }
 
         async function toggleTask(milestoneId, taskIndex) {
@@ -610,13 +616,14 @@
         function getGoogleCalendarUrl(milestone) {
             const base = "https://calendar.google.com/calendar/render?action=TEMPLATE";
             const title = `TripPulse [${milestone.type.toUpperCase()}]: ${milestone.title}`;
-            const cleanDate = milestone.date.replace(/-/g, '');
             const cleanTime = milestone.time.replace(/:/g, '');
-            const startStr = `${cleanDate}T${cleanTime}00`;
-            
-            let hour = parseInt(milestone.time.split(':')[0]) + 1;
-            if (isNaN(hour) || hour >= 24) hour = 12;
-            const endStr = `${cleanDate}T${String(hour).padStart(2, '0')}0000`;
+            const [y, m, d] = milestone.date.split('-').map(Number);
+            const startDate = new Date(y, m - 1, d, parseInt(milestone.time.split(':')[0]) || 0, parseInt(milestone.time.split(':')[1]) || 0);
+            const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+            const pad = n => String(n).padStart(2, '0');
+            const fmt = dt => `${dt.getFullYear()}${pad(dt.getMonth() + 1)}${pad(dt.getDate())}T${pad(dt.getHours())}${pad(dt.getMinutes())}00`;
+            const startStr = fmt(startDate);
+            const endStr = fmt(endDate);
             
             let details = milestone.notes || '';
             if(milestone.code) details += `\nReserva: ${milestone.code}`;
@@ -626,10 +633,12 @@
             return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(milestone.address || '')}`;
         }
 
+        // Devuelve { ok, adopted, error } — adopted=true si se pisó el estado local con el de la nube
         async function autoPullFromCloud(isForcedManual = false) {
-            if(isSyncingLock && !isForcedManual) return;
+            if(isSyncingLock && !isForcedManual) return { ok: false };
             const creds = getSyncCredentials();
-            if(!creds.token || !creds.gistId) return;
+            if(!creds.token || !creds.gistId) return { ok: false, noCreds: true };
+            isSyncingLock = true;
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
@@ -637,36 +646,42 @@
                     method: 'GET',
                     headers: { 'Authorization': `token ${creds.token}` }
                 });
-                if(res.ok) {
-                    const gistData = await res.json();
-                    if(gistData.files && gistData.files["travel_timeline.json"]) {
-                        const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
-                        const cloudUpdatedAt = cloudContent.updatedAt || 0;
-                        
-                        if(cloudUpdatedAt > globalState.updatedAt || isForcedManual || (isFreshInstall && cloudContent.trips && cloudContent.trips.length > 0)) {
-                            globalState = cloudContent;
-                            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
-                            isFreshInstall = false;
-                            render();
-                        } else if(globalState.updatedAt > cloudUpdatedAt) {
-                            await autoPushToCloud(true);
-                        }
-                    }
+                if(!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+
+                const gistData = await res.json();
+                if(!gistData.files || !gistData.files["travel_timeline.json"]) return { ok: true, adopted: false };
+
+                const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
+                const cloudUpdatedAt = cloudContent.updatedAt || 0;
+
+                // Solo se adopta la versión de la nube si es más nueva que la local (o instalación nueva sin datos).
+                // Un sync manual NUNCA debe pisar cambios locales más recientes todavía no subidos.
+                if(cloudUpdatedAt > globalState.updatedAt || (isFreshInstall && cloudContent.trips && cloudContent.trips.length > 0)) {
+                    globalState = cloudContent;
+                    localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+                    isFreshInstall = false;
+                    render();
+                    return { ok: true, adopted: true };
                 }
-            } catch(e) { 
-                console.log("Descarga pasiva amortiguada."); 
-            } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
+                return { ok: true, adopted: false };
+            } catch(e) {
+                console.log("Descarga pasiva amortiguada.");
+                return { ok: false, error: e.message };
+            } finally {
+                isSyncingLock = false;
+                if(syncBtn) syncBtn.classList.remove('spinning');
+            }
         }
 
         async function autoPushToCloud(bypassLock = false) {
-            if(isSyncingLock && !bypassLock) return;
+            if(isSyncingLock && !bypassLock) return { ok: false };
             const creds = getSyncCredentials();
-            if(!creds.token || !creds.gistId) return;
+            if(!creds.token || !creds.gistId) return { ok: false, noCreds: true };
             isSyncingLock = true;
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
-                await fetch(`https://api.github.com/gists/${creds.gistId}`, {
+                const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     method: 'PATCH',
                     headers: { 
                         'Authorization': `token ${creds.token}`,
@@ -676,32 +691,37 @@
                         files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
                     })
                 });
+                if(!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+                return { ok: true };
             } catch(e) { 
                 console.log("Escritura pasiva amortiguada.");
+                return { ok: false, error: e.message };
             } finally { 
                 isSyncingLock = false;
                 if(syncBtn) syncBtn.classList.remove('spinning'); 
             }
         }
 
-        function forceSetupCredentials() {
-            const token = prompt("Ingresá tu GitHub Token (PAT):", localStorage.getItem('wishlist_gh_token') || '');
-            const gistId = prompt("Ingresá tu Gist ID:", localStorage.getItem('wishlist_gh_gist') || '206145949f30bf9663b1f7ba2ed4573a');
-            if(token && gistId) {
-                localStorage.setItem('wishlist_gh_token', token.trim());
-                localStorage.setItem('wishlist_gh_gist', gistId.trim());
-                manualSync();
-            }
-        }
-
         async function manualSync() {
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) {
-                forceSetupCredentials();
+                await forceSetupCredentials();
                 return;
             }
-            await autoPullFromCloud(true);
-            await autoPushToCloud(true);
+            const pullResult = await autoPullFromCloud(true);
+            if(!pullResult.ok) {
+                alert(`❌ No se pudo sincronizar (falló la descarga: ${pullResult.error || 'error de red'}).`);
+                return;
+            }
+            if(pullResult.adopted) {
+                alert("☁️ Se encontró una versión más reciente en la nube y se cargó localmente.");
+                return;
+            }
+            const pushResult = await autoPushToCloud(true);
+            if(!pushResult.ok) {
+                alert(`❌ No se pudo subir tu itinerario a la nube (${pushResult.error || 'error de red'}).`);
+                return;
+            }
             alert("🔄 Itinerario sincronizado con éxito.");
         }
 
@@ -713,7 +733,7 @@
                         <div class="task-checkbox">
                             <svg class="task-checkmark" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
                         </div>
-                        <span>${task.text}</span>
+                        <span>${escapeHtml(task.text)}</span>
                     </div>
                 `).join('');
                 checklistHtml = `<div class="subchecklist-box">${itemsHtml}</div>`;
@@ -727,6 +747,7 @@
                 waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
             }
 
+            /* 📍 BOTÓN DE GOOGLE MAPS CORREGIDO CON STRING INTERPOLATION EN PARSEO SEGURO */
             let mapButtonHtml = '';
             if (milestone.address && milestone.address.trim() !== '') {
                 mapButtonHtml = `<a href="https://maps.google.com/?q=${encodeURIComponent(milestone.address)}" target="_blank" class="btn-map-link">📍 Ver Mapa</a>`;
@@ -743,8 +764,8 @@
                     <details class="notes-dropdown">
                         <summary class="notes-summary">📝 Ver Notas / Adjunto</summary>
                         <div class="notes-content">
-                            ${notesText ? `<p style="margin-bottom: 0.4rem;">${notesText}</p>` : ''}
-                            ${milestone.address ? `<p style="margin-bottom: 0.4rem; color:var(--teal);">📍 <b>Ubicación:</b> ${milestone.address}</p>` : ''}
+                            ${notesText ? `<p style="margin-bottom: 0.4rem;">${escapeHtml(notesText)}</p>` : ''}
+                            ${milestone.address ? `<p style="margin-bottom: 0.4rem; color:var(--teal);">📍 <b>Ubicación:</b> ${escapeHtml(milestone.address)}</p>` : ''}
                             ${milestone.image ? `<div style="text-align:center; margin-top:0.4rem;"><img src="${milestone.image}" style="max-width:100%; border-radius:8px; border:1px solid var(--surface3);" alt="Comprobante"></div>` : ''}
                         </div>
                     </details>
@@ -778,8 +799,8 @@
                         <svg viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
                     </button>
                     <div style="min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
-                        <div class="card-main-title">${milestone.title}</div>
-                        ${milestone.code ? `<div><span class="res-code">${milestone.code}</span></div>` : ''}
+                        <div class="card-main-title">${escapeHtml(milestone.title)}</div>
+                        ${milestone.code ? `<div><span class="res-code">${escapeHtml(milestone.code)}</span></div>` : ''}
                     </div>
                 </div>
                 
@@ -802,7 +823,7 @@
                     ${waButtonHtml}
                     ${mapButtonHtml}
                     <a href="${googleCalUrl}" target="_blank" class="btn-action-small" style="color:var(--teal); text-decoration:none; font-weight:600;">📅 Google Cal</a>
-                    <button class="btn-action-small" onclick="editMilestone('${milestone.id}')">Editar Hito</button>
+                    <button class="btn-action-small" onclick="editMilestoneNotes('${milestone.id}')">Editar Notas</button>
                     <button class="btn-action-small" onclick="shareWhatsApp('${milestone.id}')">Compartir</button>
                     <button class="btn-action-small delete-trigger" onclick="deleteMilestone('${milestone.id}')">Eliminar</button>
                 </div>
@@ -813,7 +834,7 @@
             const trip = getActiveTrip();
 
             const select = document.getElementById('tripSelector');
-            select.innerHTML = globalState.trips.map(t => `<option value="${t.id}" ${t.id === globalState.activeTripId ? 'selected' : ''}>📌 ${t.name}</option>`).join('');
+            select.innerHTML = globalState.trips.map(t => `<option value="${t.id}" ${t.id === globalState.activeTripId ? 'selected' : ''}>📌 ${escapeHtml(t.name)}</option>`).join('');
 
             document.getElementById('insProvider').textContent = trip.insurance.provider || "Sin registrar";
             document.getElementById('insCoverage').textContent = trip.insurance.coverage || "Sin registrar";
@@ -822,7 +843,7 @@
             const cardBox = document.getElementById('vipCardsContainer');
             cardBox.innerHTML = trip.cards.map(c => `
                 <div class="card-row-item">
-                    <span class="card-row-name">💳 ${c.name}</span>
+                    <span class="card-row-name">💳 ${escapeHtml(c.name)}</span>
                     <div class="card-row-controls">
                         <button class="btn-counter-small" onclick="updateCardCounter('${c.id}', -1)">-</button>
                         <span class="card-row-counter">${c.passes}</span>
