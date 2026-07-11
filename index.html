@@ -151,6 +151,42 @@
         .empty-state { text-align: center; color: var(--label3); padding: 2.5rem 1rem; font-size: 0.82rem; }
         .wish-category { font-size: 0.65rem; color: var(--label3); background: var(--surface2); padding: 0.1rem 0.35rem; text-transform: uppercase; font-weight: 700; flex-shrink: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- Estado de sync (badge sobre el botón de nube) --- */
+        .cloud-sync-wrap { position: relative; }
+        .sync-dot { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--bg); background: var(--label3); transition: background 0.2s; }
+        .sync-dot.dot-synced { background: var(--green); }
+        .sync-dot.dot-pending { background: var(--orange); }
+        .sync-dot.dot-error { background: var(--red); }
+        .sync-dot.dot-nocreds { background: var(--label3); }
+
+        /* --- Toasts --- */
+        .toast-container { position: fixed; top: calc(env(safe-area-inset-top) + 0.6rem); left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 0.4rem; align-items: center; width: 100%; max-width: 460px; padding: 0 0.8rem; pointer-events: none; }
+        .toast { background: var(--surface2); border: 1px solid var(--surface3); color: var(--label); font-size: 0.8rem; font-weight: 600; padding: 0.55rem 0.85rem; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.35); opacity: 0; transform: translateY(-8px); transition: opacity 0.2s, transform 0.2s; max-width: 100%; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.toast-success { border-color: rgba(48,209,88,0.4); }
+        .toast.toast-error { border-color: rgba(255,69,58,0.4); }
+        .toast.toast-info { border-color: rgba(0,122,255,0.4); }
+
+        /* --- Modal de edición completa --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 900; display: none; align-items: flex-end; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-sheet { background: var(--surface); width: 100%; max-width: 500px; border-radius: 18px 18px 0 0; max-height: 88vh; overflow-y: auto; padding: 0.9rem 0.9rem calc(env(safe-area-inset-bottom) + 1rem) 0.9rem; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+        .modal-header h2 { font-size: 1rem; font-weight: 700; }
+        .modal-close-btn { background: var(--surface2); border: none; color: var(--label2); width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; }
+        .modal-body { display: flex; flex-direction: column; gap: 0.5rem; }
+        .modal-actions { display: flex; gap: 0.5rem; margin-top: 0.3rem; }
+        .modal-actions .btn-add { flex: 1; }
+        .btn-remove-photo { background: var(--surface2); border: 1px dashed var(--red); color: var(--red); font-size: 0.72rem; font-weight: 600; padding: 0.4rem; border-radius: 8px; cursor: pointer; }
+
+        /* --- Barra de uso de almacenamiento --- */
+        .storage-bar-wrap { margin-top: 1.2rem; padding: 0 0.1rem; }
+        .storage-bar-track { background: var(--surface2); height: 5px; border-radius: 3px; overflow: hidden; margin-top: 0.3rem; }
+        .storage-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s, background 0.3s; }
+        .storage-bar-fill.warn { background: var(--orange); }
+        .storage-bar-fill.danger { background: var(--red); }
+        .backup-actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 0.6rem; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -160,8 +196,13 @@
                 <h1>TripPulse <span class="version-badge">v4.4</span></h1>
                 <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
-            <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
+            <div class="cloud-sync-wrap">
+                <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
+                <span class="sync-dot" id="syncDot" title="Estado de sincronización"></span>
+            </div>
         </header>
+
+        <div class="toast-container" id="toastContainer"></div>
 
         <div class="trip-manager-bar">
             <select class="trip-select" id="tripSelector" onchange="changeTripContext(this.value)"></select>
@@ -289,6 +330,85 @@
 
         <div class="settings-footer">
             <button class="btn-text-action" style="color: var(--label3); text-decoration: underline;" onclick="forceSetupCredentials()">⚙️ Reconfigurar credenciales de la nube</button>
+            <div class="backup-actions">
+                <button class="btn-text-action" onclick="downloadBackup()">⬇️ Descargar backup (JSON)</button>
+                <button class="btn-text-action" onclick="document.getElementById('fImportBackup').click()">⬆️ Restaurar backup</button>
+                <input type="file" id="fImportBackup" accept="application/json" style="display:none;" onchange="importBackup(this.files[0])">
+            </div>
+            <div class="storage-bar-wrap">
+                <span id="storageBarLabel">Uso de almacenamiento local: -</span>
+                <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill" style="width:0%;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModalOverlay">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h2>✏️ Editar hito</h2>
+                <button class="modal-close-btn" onclick="closeEditModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="row-inputs">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="eType">
+                            <option value="flight">✈️ Vuelo</option>
+                            <option value="hotel">🏨 Alojamiento</option>
+                            <option value="transfer">🚗 Traslado / Conexión</option>
+                            <option value="pass">🎫 Pase / Acceso Especial</option>
+                            <option value="custom">📌 Recordatorio / Tarea</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Título / Descripción</label>
+                        <input type="text" id="eTitle">
+                    </div>
+                </div>
+                <div class="row-inputs">
+                    <div class="form-group">
+                        <label>Fecha de Inicio</label>
+                        <input type="date" id="eDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Hora (24hs)</label>
+                        <input type="time" id="eTime">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>📍 Dirección / Ubicación</label>
+                    <input type="text" id="eAddress">
+                </div>
+                <div class="row-inputs">
+                    <div class="form-group">
+                        <label>Código Reserva (opcional)</label>
+                        <input type="text" id="eCode">
+                    </div>
+                    <div class="form-group">
+                        <label>¿Tiene pago allá?</label>
+                        <select id="eHasPayment" onchange="document.getElementById('eCostContainer').style.display = this.value === 'yes' ? 'flex' : 'none'">
+                            <option value="no">No requiere pago allá</option>
+                            <option value="yes">Sí, requiere pago allá</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="eCostContainer" style="display: none;">
+                    <label>Monto a pagar allá (USD)</label>
+                    <input type="number" id="eCost" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>📸 Reemplazar Foto / Comprobante (Opcional)</label>
+                    <input type="file" id="eMedia" accept="image/*" style="background:transparent; padding:0;">
+                    <button type="button" class="btn-remove-photo" id="eRemovePhotoBtn" onclick="markPhotoForRemoval()">🗑️ Quitar foto actual</button>
+                </div>
+                <div class="form-group">
+                    <label>Notas / Detalles</label>
+                    <textarea id="eNotes" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-add" onclick="saveEditModal()">Guardar cambios</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -355,12 +475,12 @@
             const gistId = prompt("Pegá el ID del Gist a usar para sincronizar:", current.gistId || '');
             if (gistId === null) return;
             if (!token.trim() || !gistId.trim()) {
-                alert("Token y Gist ID son obligatorios para sincronizar.");
+                toast("Token y Gist ID son obligatorios para sincronizar.", "error");
                 return;
             }
             localStorage.setItem('wishlist_gh_token', token.trim());
             localStorage.setItem('wishlist_gh_gist', gistId.trim());
-            alert("Credenciales guardadas. Sincronizando...");
+            toast('🔐 Credenciales guardadas. Sincronizando...', 'info');
             await manualSync();
         }
 
@@ -374,11 +494,55 @@
             return trip;
         }
 
+        let pushDebounceTimer = null;
+        let hasUnsyncedChanges = false;
+        let lastKnownCloudUpdatedAt = 0;
+        let lastSyncHadError = false;
+
         async function save() {
             globalState.updatedAt = Date.now();
             localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
             render();
-            await autoPushToCloud();
+            hasUnsyncedChanges = true;
+            updateSyncStatus();
+            scheduleCloudPush();
+        }
+
+        function scheduleCloudPush() {
+            clearTimeout(pushDebounceTimer);
+            pushDebounceTimer = setTimeout(async () => {
+                const result = await autoPushToCloud();
+                if(result.ok) {
+                    hasUnsyncedChanges = false;
+                    lastSyncHadError = false;
+                } else if(result.conflict) {
+                    // No pisamos la nube: dejamos las cosas como están y avisamos suave.
+                    toast('⚠️ Hay cambios más nuevos en la nube. Tocá 🔄 para traerlos antes de seguir editando.', 'error', 5000);
+                } else if(!result.noCreds) {
+                    lastSyncHadError = true;
+                }
+                updateSyncStatus();
+            }, 1500);
+        }
+
+        function updateSyncStatus() {
+            const dot = document.getElementById('syncDot');
+            if(!dot) return;
+            const creds = getSyncCredentials();
+            dot.classList.remove('dot-synced', 'dot-pending', 'dot-error', 'dot-nocreds');
+            if(!creds.token) {
+                dot.classList.add('dot-nocreds');
+                dot.title = 'Sin credenciales configuradas';
+            } else if(lastSyncHadError) {
+                dot.classList.add('dot-error');
+                dot.title = 'Error en la última sincronización';
+            } else if(hasUnsyncedChanges) {
+                dot.classList.add('dot-pending');
+                dot.title = 'Cambios pendientes de subir';
+            } else {
+                dot.classList.add('dot-synced');
+                dot.title = 'Todo sincronizado';
+            }
         }
 
         async function changeTripContext(id) {
@@ -406,7 +570,7 @@
 
         async function deleteCurrentTripContext() {
             if (globalState.trips.length <= 1) {
-                alert("No podés eliminar tu único viaje activo.");
+                toast("No podés eliminar tu único viaje activo.", "error");
                 return;
             }
             const activeTrip = getActiveTrip();
@@ -461,7 +625,7 @@
         }
 
         function processImageAttachment(file) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = new Image();
@@ -479,12 +643,84 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+
+                        // Baja la calidad hasta que el adjunto pese menos de ~700KB en base64 (o toque el piso de calidad)
+                        const MAX_BYTES = 700 * 1024;
+                        let quality = 0.6;
+                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        while (dataUrl.length * 0.75 > MAX_BYTES && quality > 0.25) {
+                            quality -= 0.1;
+                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        }
+                        resolve(dataUrl);
                     };
+                    img.onerror = () => reject(new Error('No se pudo procesar la imagen.'));
                     img.src = e.target.result;
                 };
+                reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
                 reader.readAsDataURL(file);
             });
+        }
+
+        // --- Uso de almacenamiento local ---
+        function estimateStorageBytes() {
+            const str = localStorage.getItem('trippulse_global_v2') || '';
+            return new Blob([str]).size;
+        }
+
+        function updateStorageBar() {
+            const bytes = estimateStorageBytes();
+            const mb = bytes / (1024 * 1024);
+            const QUOTA_MB = 5; // límite aproximado y conservador de localStorage
+            const pct = Math.min(100, (mb / QUOTA_MB) * 100);
+            const label = document.getElementById('storageBarLabel');
+            const fill = document.getElementById('storageBarFill');
+            if(label) label.textContent = `Uso de almacenamiento local: ${mb.toFixed(2)} MB de ~${QUOTA_MB} MB`;
+            if(fill) {
+                fill.style.width = `${pct}%`;
+                fill.classList.remove('warn', 'danger');
+                if(pct >= 90) fill.classList.add('danger');
+                else if(pct >= 65) fill.classList.add('warn');
+            }
+        }
+
+        // --- Backup manual ---
+        function downloadBackup() {
+            const dataStr = JSON.stringify(globalState, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const ts = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `trippulse_backup_${ts}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast('⬇️ Backup descargado.', 'success');
+        }
+
+        async function importBackup(file) {
+            if(!file) return;
+            if(!confirm('Esto va a REEMPLAZAR todo tu itinerario local (todos los viajes) por el contenido del backup. ¿Continuar?')) {
+                document.getElementById('fImportBackup').value = '';
+                return;
+            }
+            try {
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                if(!parsed || !Array.isArray(parsed.trips)) throw new Error('Formato inválido');
+                globalState = parsed;
+                if(!globalState.updatedAt) globalState.updatedAt = Date.now();
+                if(!globalState.activeTripId && globalState.trips[0]) globalState.activeTripId = globalState.trips[0].id;
+                localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+                render();
+                toast('✅ Backup restaurado localmente. Tocá 🔄 para subirlo a la nube.', 'success', 4500);
+            } catch(e) {
+                toast('❌ El archivo no es un backup válido de TripPulse.', 'error');
+            } finally {
+                document.getElementById('fImportBackup').value = '';
+            }
         }
 
         async function addMilestone() {
@@ -500,7 +736,7 @@
             const fileInput = document.getElementById('fMedia');
 
             if (!title || !date) {
-                alert("Por favor completá el título y la fecha del hito.");
+                toast("Por favor completá el título y la fecha del hito.", "error");
                 return;
             }
 
@@ -510,7 +746,11 @@
 
             let compressedImage = "";
             if(fileInput.files && fileInput.files[0]) {
-                compressedImage = await processImageAttachment(fileInput.files[0]);
+                try {
+                    compressedImage = await processImageAttachment(fileInput.files[0]);
+                } catch(e) {
+                    toast('⚠️ No se pudo procesar la foto adjunta, se guardó el hito sin ella.', 'error');
+                }
             }
 
             const trip = getActiveTrip();
@@ -554,16 +794,100 @@
             }
         }
 
-        async function editMilestoneNotes(id) {
+        // --- Modal de edición completa ---
+        let editingMilestoneId = null;
+        let editingRemovePhoto = false;
+
+        function openEditModal(id) {
             const trip = getActiveTrip();
             const milestone = trip.milestones.find(m => m.id === id);
-            if (milestone) {
-                const newNotes = prompt(`Editar notas para "${milestone.title}":`, milestone.notes || '');
-                if (newNotes !== null) {
-                    milestone.notes = newNotes.trim();
-                    await save();
-                }
+            if(!milestone) return;
+            editingMilestoneId = id;
+            editingRemovePhoto = false;
+
+            document.getElementById('eType').value = milestone.type;
+            document.getElementById('eTitle').value = milestone.title || '';
+            document.getElementById('eDate').value = milestone.date || '';
+            document.getElementById('eTime').value = milestone.time || '';
+            document.getElementById('eAddress').value = milestone.address || '';
+            document.getElementById('eCode').value = milestone.code || '';
+            const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
+            document.getElementById('eHasPayment').value = hasPay ? 'yes' : 'no';
+            document.getElementById('eCostContainer').style.display = hasPay ? 'flex' : 'none';
+            document.getElementById('eCost').value = milestone.cost || 0;
+            document.getElementById('eNotes').value = milestone.notes || '';
+            document.getElementById('eMedia').value = '';
+
+            const removeBtn = document.getElementById('eRemovePhotoBtn');
+            removeBtn.style.display = milestone.image ? 'block' : 'none';
+            removeBtn.textContent = '🗑️ Quitar foto actual';
+
+            document.getElementById('editModalOverlay').classList.add('open');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModalOverlay').classList.remove('open');
+            editingMilestoneId = null;
+            editingRemovePhoto = false;
+        }
+
+        function markPhotoForRemoval() {
+            editingRemovePhoto = true;
+            document.getElementById('eRemovePhotoBtn').textContent = '✔️ Se quitará al guardar';
+        }
+
+        async function saveEditModal() {
+            if(!editingMilestoneId) return;
+            const trip = getActiveTrip();
+            const milestone = trip.milestones.find(m => m.id === editingMilestoneId);
+            if(!milestone) return;
+
+            const title = document.getElementById('eTitle').value.trim();
+            const date = document.getElementById('eDate').value;
+            if(!title || !date) {
+                toast('Completá al menos el título y la fecha.', 'error');
+                return;
             }
+
+            milestone.type = document.getElementById('eType').value;
+            milestone.title = title;
+            milestone.date = date;
+            milestone.time = document.getElementById('eTime').value || '12:00';
+            milestone.address = document.getElementById('eAddress').value.trim();
+            milestone.code = document.getElementById('eCode').value.trim();
+            milestone.hasPayment = document.getElementById('eHasPayment').value === 'yes';
+            milestone.cost = milestone.hasPayment ? (parseFloat(document.getElementById('eCost').value) || 0) : 0;
+            milestone.notes = document.getElementById('eNotes').value.trim();
+
+            const fileInput = document.getElementById('eMedia');
+            if(fileInput.files && fileInput.files[0]) {
+                try {
+                    milestone.image = await processImageAttachment(fileInput.files[0]);
+                } catch(e) {
+                    toast('⚠️ No se pudo procesar la nueva foto, se mantuvo la anterior.', 'error');
+                }
+            } else if(editingRemovePhoto) {
+                milestone.image = '';
+            }
+
+            closeEditModal();
+            await save();
+            toast('✅ Hito actualizado.', 'success');
+        }
+
+        // --- Sistema de toasts (feedback no bloqueante) ---
+        function toast(message, type = 'info', duration = 3200) {
+            const container = document.getElementById('toastContainer');
+            if(!container) { console.log(message); return; }
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.textContent = message;
+            container.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 250);
+            }, duration);
         }
 
         async function toggleTask(milestoneId, taskIndex) {
@@ -653,6 +977,7 @@
 
                 const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
                 const cloudUpdatedAt = cloudContent.updatedAt || 0;
+                lastKnownCloudUpdatedAt = Math.max(lastKnownCloudUpdatedAt, cloudUpdatedAt);
 
                 // Solo se adopta la versión de la nube si es más nueva que la local (o instalación nueva sin datos).
                 // Un sync manual NUNCA debe pisar cambios locales más recientes todavía no subidos.
@@ -660,6 +985,7 @@
                     globalState = cloudContent;
                     localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
                     isFreshInstall = false;
+                    hasUnsyncedChanges = false;
                     render();
                     return { ok: true, adopted: true };
                 }
@@ -670,10 +996,11 @@
             } finally {
                 isSyncingLock = false;
                 if(syncBtn) syncBtn.classList.remove('spinning');
+                updateSyncStatus();
             }
         }
 
-        async function autoPushToCloud(bypassLock = false) {
+        async function autoPushToCloud(bypassLock = false, skipConflictCheck = false) {
             if(isSyncingLock && !bypassLock) return { ok: false };
             const creds = getSyncCredentials();
             if(!creds.token || !creds.gistId) return { ok: false, noCreds: true };
@@ -681,6 +1008,26 @@
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
             try {
+                // Chequeo de conflicto: si alguien pusheó algo que todavía no vimos, no lo pisamos a ciegas.
+                if(!skipConflictCheck) {
+                    try {
+                        const checkRes = await fetch(`https://api.github.com/gists/${creds.gistId}?_cb=${Date.now()}`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `token ${creds.token}` }
+                        });
+                        if(checkRes.ok) {
+                            const checkData = await checkRes.json();
+                            if(checkData.files && checkData.files["travel_timeline.json"]) {
+                                const cloudNow = JSON.parse(checkData.files["travel_timeline.json"].content);
+                                const cloudNowUpdatedAt = cloudNow.updatedAt || 0;
+                                if(cloudNowUpdatedAt > lastKnownCloudUpdatedAt && cloudNowUpdatedAt !== globalState.updatedAt) {
+                                    return { ok: false, conflict: true };
+                                }
+                            }
+                        }
+                    } catch(e) { /* si falla el chequeo, intentamos subir igual */ }
+                }
+
                 const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
                     method: 'PATCH',
                     headers: { 
@@ -692,6 +1039,7 @@
                     })
                 });
                 if(!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+                lastKnownCloudUpdatedAt = globalState.updatedAt;
                 return { ok: true };
             } catch(e) { 
                 console.log("Escritura pasiva amortiguada.");
@@ -699,6 +1047,7 @@
             } finally { 
                 isSyncingLock = false;
                 if(syncBtn) syncBtn.classList.remove('spinning'); 
+                updateSyncStatus();
             }
         }
 
@@ -708,21 +1057,30 @@
                 await forceSetupCredentials();
                 return;
             }
+            clearTimeout(pushDebounceTimer);
             const pullResult = await autoPullFromCloud(true);
             if(!pullResult.ok) {
-                alert(`❌ No se pudo sincronizar (falló la descarga: ${pullResult.error || 'error de red'}).`);
+                lastSyncHadError = true;
+                updateSyncStatus();
+                toast(`❌ No se pudo sincronizar (falló la descarga: ${pullResult.error || 'error de red'}).`, 'error');
                 return;
             }
             if(pullResult.adopted) {
-                alert("☁️ Se encontró una versión más reciente en la nube y se cargó localmente.");
+                lastSyncHadError = false;
+                toast('☁️ Se encontró una versión más reciente en la nube y se cargó localmente.', 'info', 4000);
                 return;
             }
-            const pushResult = await autoPushToCloud(true);
+            const pushResult = await autoPushToCloud(true, true);
             if(!pushResult.ok) {
-                alert(`❌ No se pudo subir tu itinerario a la nube (${pushResult.error || 'error de red'}).`);
+                lastSyncHadError = true;
+                updateSyncStatus();
+                toast(`❌ No se pudo subir tu itinerario a la nube (${pushResult.error || 'error de red'}).`, 'error');
                 return;
             }
-            alert("🔄 Itinerario sincronizado con éxito.");
+            hasUnsyncedChanges = false;
+            lastSyncHadError = false;
+            updateSyncStatus();
+            toast('🔄 Itinerario sincronizado con éxito.', 'success');
         }
 
         function buildMilestoneCardHtml(milestone) {
@@ -823,7 +1181,7 @@
                     ${waButtonHtml}
                     ${mapButtonHtml}
                     <a href="${googleCalUrl}" target="_blank" class="btn-action-small" style="color:var(--teal); text-decoration:none; font-weight:600;">📅 Google Cal</a>
-                    <button class="btn-action-small" onclick="editMilestoneNotes('${milestone.id}')">Editar Notas</button>
+                    <button class="btn-action-small" onclick="openEditModal('${milestone.id}')">✏️ Editar</button>
                     <button class="btn-action-small" onclick="shareWhatsApp('${milestone.id}')">Compartir</button>
                     <button class="btn-action-small delete-trigger" onclick="deleteMilestone('${milestone.id}')">Eliminar</button>
                 </div>
@@ -889,6 +1247,9 @@
             if(historyCount === 0) historyContainer.innerHTML = `<div class="empty-state">No archivaste hitos en este viaje todavía.</div>`;
 
             document.getElementById('valPendingPay').textContent = `USD ${totalPendingPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            updateStorageBar();
+            updateSyncStatus();
         }
 
         window.onload = function() {
