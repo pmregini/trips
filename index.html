@@ -219,7 +219,7 @@
         <div class="catalog-grid" id="catalogGrid"></div>
 
         <div class="footer">
-            <button class="btn-panel scan" style="margin:0 auto; background: var(--surface2); border-color: var(--surface3);" id="btnScan" onclick="triggerDirectoryScan()">📁 Scan Directorio (Automático)</button>
+            <button class="btn-panel scan" style="margin:0 auto; background: var(--surface2); border-color: var(--surface3); display: none;" id="btnScan" onclick="triggerDirectoryScan()">📁 Scan Directorio (Automático)</button>
             <input type="file" id="directoryInput" webkitdirectory directory multiple onchange="handleDirectorySelection(event)" style="display: none;">
             
             <button class="btn-footer" style="margin-top:0.5rem;" onclick="setupOMDbKey()">⚙️ Configurar OMDb API Key</button>
@@ -236,6 +236,13 @@
             omdbKey: '', 
             movies: [] 
         };
+
+        // Data Normalization (Defensive Initialization)
+        if(state.movies && Array.isArray(state.movies)) {
+            state.movies.forEach(m => {
+                if(!m.disk || m.disk.trim() === "") m.disk = "Adata";
+            });
+        }
 
         function toggleForm() {
             document.getElementById('formCard').classList.toggle('open');
@@ -643,6 +650,14 @@
                         
                         if(cloudUpdatedAt > state.updatedAt || isForcedManual) {
                             state = cloudContent;
+                            
+                            // Data Normalization (Defensive Initialization)
+                            if(state.movies && Array.isArray(state.movies)) {
+                                state.movies.forEach(m => {
+                                    if(!m.disk || m.disk.trim() === "") m.disk = "Adata";
+                                });
+                            }
+
                             localStorage.setItem('cinepulse_cloud_state_v4', JSON.stringify(state));
                             populateTaxonomies();
                             render();
