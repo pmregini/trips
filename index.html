@@ -3,824 +3,1261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CinePulse</title>
-    <link class="apple-touch-icon" href="https://fav.farm/🎬">
+    <title>TripPulse v4.4</title>
+    <link rel="apple-touch-icon" href="https://fav.farm/✈️">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         :root {
-            --bg: #000000; --surface: #1c1c1e; --surface2: #2c2c2e; --surface3: #3a3a3c;
-            --separator: rgba(255,255,255,0.09); --label: #ffffff; --label2: #98989d;
-            --label3: #636366; --accent: #ff9f0a; --blue: #007aff; --green: #30d158; --red: #ff453a;
+            --bg: #000000;
+            --surface: #1c1c1e;
+            --surface2: #2c2c2e;
+            --surface3: #3a3a3c;
+            --separator: rgba(255,255,255,0.09);
+            --label: #ffffff;
+            --label2: #98989d;
+            --label3: #636366;
+            --accent: #007aff;
+            --green: #30d158;
+            --orange: #ff9f0a;
+            --red: #ff453a;
+            --purple: #bf5af2;
+            --teal: #5ac8ea;
+            --whatsapp: #25d366;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent;}
-        body { background: var(--bg); color: var(--label); padding: calc(env(safe-area-inset-top) + 0.6rem) 0.8rem 6rem 0.8rem; }
-        .container { max-width: 800px; margin: 0 auto; }
-        header { padding: 0.4rem 0.1rem; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
-        h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-font-smoothing: antialiased; }
+        body {
+            background: var(--bg);
+            color: var(--label);
+            padding: calc(env(safe-area-inset-top) + 0.6rem) 0.8rem calc(env(safe-area-inset-bottom) + 5.5rem) 0.8rem;
+            letter-spacing: -0.01em;
+        }
+
+        .container { max-width: 500px; margin: 0 auto; }
+
+        header { padding: 0.3rem 0.1rem 0.6rem 0.1rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+        h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.35rem; }
+        .version-badge { font-size: 0.68rem; font-weight: 600; color: var(--label3); background: var(--surface2); padding: 0.1rem 0.35rem; border-radius: 5px; border: 1px solid var(--surface3); }
         
-        .header-actions { display: flex; gap: 0.5rem; }
-        .btn-panel { background: var(--surface2); border: 1px solid var(--surface3); color: white; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; }
-        .btn-panel.spinning { animation: spin 1s linear infinite; opacity: 0.6; pointer-events: none; }
+        .trip-manager-bar { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; background: var(--surface); padding: 0.4rem; border-radius: 12px; align-items: center; }
+        .trip-select { flex: 1; background: var(--surface2); border: none; color: var(--label); padding: 0.45rem 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; outline: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2398989d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
+        .btn-text-action { background: transparent; border: none; color: var(--accent); font-weight: 600; font-size: 0.82rem; cursor: pointer; padding: 0.2rem 0.4rem; }
 
-        .filter-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.4rem; margin-bottom: 0.6rem; }
-        .filter-panel select { background: var(--surface); border: 1px solid var(--surface2); padding: 0.55rem; border-radius: 8px; color: white; font-size: 0.78rem; outline: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2398989d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px;}
+        .btn-cloud-sync { background: var(--surface2); border: 1px solid var(--surface3); color: white; width: 36px; height: 32px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .btn-cloud-sync.spinning { animation: spin 0.8s linear infinite; color: var(--green); }
 
-        .search-row { display: flex; gap: 0.4rem; margin-bottom: 0.8rem; flex-wrap: wrap;}
-        .search-input { flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--surface2); padding: 0.6rem; border-radius: 8px; color: white; font-size: 0.88rem; outline: none; margin-bottom: 0;}
-        .sort-select { background: var(--surface); border: 1px solid var(--surface2); padding: 0.6rem; border-radius: 8px; color: white; font-size: 0.8rem; outline: none; -webkit-appearance: none; width: auto; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2398989d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px;}
+        .budget-bar { background: var(--surface); border-radius: 12px; padding: 0.6rem 0.9rem; margin-bottom: 0.45rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,159,10,0.15); }
+        .budget-bar label { font-size: 0.72rem; color: var(--label2); font-weight: 600; text-transform: uppercase; }
+        .budget-bar .value { font-size: 1.1rem; font-weight: 700; color: var(--orange); font-variant-numeric: tabular-nums; }
 
-        .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.8rem; }
-        @media (max-width: 480px) { .catalog-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; } }
+        .collapsible-panel { background: var(--surface2); border: 1px solid var(--surface3); border-radius: 14px; margin-bottom: 0.45rem; overflow: hidden; }
+        .collapsible-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.9rem; cursor: pointer; }
+        .collapsible-title { font-size: 0.75rem; font-weight: 700; color: var(--label); text-transform: uppercase; letter-spacing: 0.03em; display: flex; align-items: center; gap: 0.3rem; }
+        .collapsible-panel .chevron { font-size: 0.65rem; color: var(--label3); transition: transform 0.23s; }
+        .collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
+        .collapsible-panel.open .collapsible-body { max-height: 500px; }
+        .collapsible-panel.open .chevron { transform: rotate(180deg); }
+        .collapsible-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
 
-        .movie-card { background: var(--surface); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--separator); position: relative; }
-        .movie-card.is-watched .poster-img { opacity: 0.35; filter: grayscale(80%); }
-        .movie-card.is-watched .movie-title { color: var(--label2); }
+        .insurance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem; background: var(--surface); padding: 0.5rem; border-radius: 9px; }
+        .insurance-item { display: flex; flex-direction: column; }
+        .insurance-item span:first-child { color: var(--label2); font-size: 0.62rem; }
+        .insurance-item span:last-child { font-weight: 600; }
 
-        .poster-wrapper { width: 100%; aspect-ratio: 2/3; background: var(--surface2); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .poster-img { width: 100%; height: 100%; object-fit: cover; transition: all 0.3s ease; }
-        
-        .rating-badge { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.8); padding: 0.2rem 0.4rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; color: var(--accent); }
-        .folder-badge { position: absolute; top: 6px; left: 6px; background: rgba(0,122,255,0.85); padding: 0.2rem 0.4rem; border-radius: 6px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
-        .shortlist-badge { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(255,159,10,0.9); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.65rem; font-weight: 800; color: #000; letter-spacing: 0.02em; }
-        .watched-badge { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: rgba(48,209,88,0.9); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; color: #000; letter-spacing: 0.02em; }
+        .card-row-item { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 0.45rem 0.6rem; border-radius: 9px; border-left: 3px solid var(--teal); }
+        .card-row-name { font-size: 0.85rem; font-weight: 600; }
+        .card-row-controls { display: flex; align-items: center; gap: 0.45rem; }
+        .card-row-counter { font-size: 0.95rem; font-weight: 700; min-width: 1.2rem; text-align: center; font-variant-numeric: tabular-nums; }
+        .btn-counter-small { background: var(--surface3); border: none; color: var(--label); width: 24px; height: 24px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-add-card-inline { background: transparent; border: 1px dashed var(--label3); color: var(--label2); font-size: 0.75rem; font-weight: 600; padding: 0.4rem; border-radius: 8px; cursor: pointer; text-align: center; }
 
-        .movie-info { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
-        .movie-title { font-size: 0.88rem; font-weight: 700; line-height: 1.2; min-height: 2.2rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .movie-meta { font-size: 0.68rem; color: var(--label2); }
-        .movie-plot { font-size: 0.72rem; color: var(--label2); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 0.1rem; flex: 1; }
-        
-        .card-actions { border-top: 1px solid var(--separator); padding: 0.4rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.3rem; background: rgba(255,255,255,0.01); }
-        .btn-card { flex: 1 1 45%; background: var(--surface2); border: none; color: var(--label); font-size: 0.7rem; font-weight: 600; cursor: pointer; padding: 0.4rem 0.2rem; border-radius: 6px; }
-        .btn-card.del { color: var(--red); flex-basis: 100%; margin-top: 2px; }
-        .btn-card.action { color: var(--blue); }
-        .btn-card.success { color: var(--green); }
-        
-        .empty-state { grid-column: 1/-1; text-align: center; color: var(--label3); padding: 4rem 1rem; font-size: 0.88rem; }
-        
-        /* Formularios y Modales */
-        .form-card { background: var(--surface); border-radius: 14px; margin-bottom: 0.8rem; overflow: hidden; border: 1px solid var(--separator); }
+        .section-label { font-size: 0.68rem; font-weight: 600; color: var(--label3); text-transform: uppercase; letter-spacing: 0.04em; margin: 1rem 0 0.4rem 0.1rem; }
+
+        .form-card { background: var(--surface); border-radius: 14px; margin-bottom: 0.45rem; overflow: hidden; border: 1px solid var(--separator); }
         .form-toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.9rem; cursor: pointer; }
-        .form-toggle-row .label { font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 0.4rem; color: var(--accent); }
+        .form-toggle-row .label { font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
         .form-card.open .chevron { transform: rotate(180deg); }
-        .form-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .form-card.open .form-body { max-height: 1500px; }
-        .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; }
-        
-        .form-group { display: flex; flex-direction: column; gap: 0.25rem; }
-        .form-group label { font-size: 0.65rem; font-weight: 600; color: var(--label2); text-transform: uppercase; letter-spacing: 0.02em; }
-        .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: none; padding: 0.65rem 0.75rem; border-radius: 8px; color: var(--label); font-size: 0.88rem; outline: none; }
-        .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-        
-        .scraper-group { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
-        .scraper-group input { flex: 1; background: var(--surface2); border: none; padding: 0.65rem 0.75rem; border-radius: 8px; color: white; font-size: 0.88rem; outline: none;}
-        .btn-scrap { background: var(--blue); color: white; border: none; padding: 0 0.8rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .form-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
+        .form-card.open .form-body { max-height: 950px; }
+        .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-body-inner { padding: 0.1rem 0.9rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.2rem; }
+        .form-group label { font-size: 0.62rem; font-weight: 600; color: var(--label3); text-transform: uppercase; }
+        .form-group input, .form-group select, .form-group textarea { background: var(--surface2); border: none; padding: 0.6rem 0.7rem; border-radius: 8px; color: var(--label); font-size: 0.85rem; outline: none; }
+        .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+        .btn-add { background: var(--accent); color: white; border: none; padding: 0.75rem; border-radius: 10px; font-weight: 700; font-size: 0.88rem; margin-top: 0.2rem; cursor: pointer; }
 
-        .omdb-results-box { display: none; flex-direction: column; gap: 0.4rem; max-height: 250px; overflow-y: auto; background: var(--surface2); padding: 0.5rem; border-radius: 8px; margin-bottom: 0.5rem; }
-        .omdb-item { display: flex; gap: 0.6rem; align-items: center; cursor: pointer; padding: 0.4rem; background: var(--surface3); border-radius: 6px; transition: background 0.1s; }
-        .omdb-item:hover { background: var(--separator); }
-        .omdb-item img { width: 35px; height: 50px; object-fit: cover; border-radius: 4px; background: #000; }
-        .omdb-item-info { display: flex; flex-direction: column; justify-content: center; }
+        .timeline-container { position: relative; padding-left: 1.1rem; margin-top: 0.3rem; }
+        .timeline-container::before { content: ''; position: absolute; top: 0.4rem; bottom: 0.4rem; left: 4.5px; width: 2px; background: var(--surface3); }
 
-        .btn-add { background: var(--accent); color: black; border: none; padding: 0.75rem; border-radius: 10px; font-weight: 700; font-size: 0.9rem; margin-top: 0.5rem; cursor: pointer; }
+        .timeline-card { background: var(--surface); border-radius: 14px; padding: 0.7rem 0.85rem; margin-bottom: 0.5rem; position: relative; display: flex; flex-direction: column; gap: 0.4rem; border: 1px solid rgba(255,255,255,0.02); }
+        .timeline-card::before { content: ''; position: absolute; top: 1.1rem; left: calc(-1.1rem - 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--surface3); border: 2px solid var(--bg); z-index: 2; }
+        .timeline-card.is-flight::before { background: var(--accent); }
+        .timeline-card.is-hotel::before { background: var(--purple); }
+        .timeline-card.is-transfer::before { background: var(--orange); }
+        .timeline-card.is-pass::before { background: var(--teal); }
 
-        .footer { margin-top: 2rem; text-align: center; padding-bottom: 2rem; display: flex; flex-direction: column; gap: 0.8rem; align-items: center;}
-        .btn-footer { background: transparent; border: none; color: var(--label3); font-size: 0.75rem; text-decoration: underline; cursor: pointer; }
+        .card-title-row { display: flex; align-items: flex-start; gap: 0.55rem; min-width: 0; width: 100%; }
+        .btn-milestone-check { background: transparent; border: 2px solid var(--label3); width: 18px; height: 18px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s, border-color 0.2s; margin-top: 2px; }
+        .btn-milestone-check svg { width: 10px; height: 10px; stroke: white; stroke-width: 3.5; fill: none; display: none; }
+        .timeline-card.passed-milestone .btn-milestone-check { background: var(--green); border-color: var(--green); }
+        .timeline-card.passed-milestone .btn-milestone-check svg { display: block; }
+        .timeline-card.passed-milestone { opacity: 0.5; }
+        .timeline-card.passed-milestone::before { background: var(--label3) !important; }
+
+        .card-meta-row { display: flex; justify-content: space-between; align-items: center; }
+        .datetime-stamp { font-size: 0.7rem; font-weight: 700; color: var(--label2); text-transform: uppercase; }
+        .type-badge { padding: 0.1rem 0.4rem; border-radius: 5px; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; }
+        .is-flight .type-badge { background: rgba(0,122,255,0.15); color: #64b5ff; }
+        .is-hotel .type-badge { background: rgba(191,90,242,0.15); color: #d493f7; }
+        .is-transfer .type-badge { background: rgba(255,159,10,0.15); color: #ffb454; }
+        .is-pass .type-badge { background: rgba(90,200,234,0.15); color: #7fd6ef; }
+        .is-custom .type-badge { background: var(--surface2); color: var(--label2); }
+
+        .card-main-title { font-size: 0.92rem; font-weight: 600; line-height: 1.25; color: var(--label); word-break: break-word; }
+        .res-code { font-family: monospace; font-size: 0.78rem; background: var(--surface2); padding: 0.1rem 0.4rem; border-radius: 4px; color: var(--green); font-weight: 700; letter-spacing: 0.04em; display: inline-block; }
+
+        .notes-dropdown { margin-top: 0.1rem; font-size: 0.76rem; }
+        .notes-summary { color: var(--accent); font-weight: 600; cursor: pointer; outline: none; list-style: none; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .notes-summary::-webkit-details-marker { display: none; }
+        .dimmed-dropdown .notes-summary { color: var(--label3); cursor: default; }
+        .notes-content { background: var(--surface2); padding: 0.4rem 0.55rem; border-radius: 7px; color: var(--label2); margin-top: 0.2rem; white-space: pre-wrap; line-height: 1.35; border-left: 2px solid var(--surface3); }
+
+        .subchecklist-box { border-top: 1px solid var(--separator); padding-top: 0.35rem; display: flex; flex-direction: column; gap: 0.3rem; }
+        .subchecklist-title { font-size: 0.62rem; font-weight: 700; color: var(--label3); text-transform: uppercase; letter-spacing: 0.02em; display: flex; justify-content: space-between; }
+        .task-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; cursor: pointer; }
+        .task-checkbox { background: transparent; border: 1.5px solid var(--label3); width: 14px; height: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .task-item.done { color: var(--label3); text-decoration: line-through; }
+        .task-item.done .task-checkbox { background: var(--green); border-color: var(--green); }
+        .task-checkmark { width: 8px; height: 8px; fill: white; display: none; }
+        .task-item.done .task-checkmark { display: block; }
         
+        .add-task-inline { display: flex; gap: 0.3rem; margin-top: 0.1rem; }
+        .add-task-inline input { flex: 1; background: var(--surface2); border: none; padding: 0.25rem 0.45rem; border-radius: 5px; color: var(--label); font-size: 0.72rem; outline: none; }
+        .add-task-inline button { background: var(--surface3); border: none; color: var(--label); font-size: 0.72rem; padding: 0 0.45rem; border-radius: 5px; font-weight: 600; }
+
+        .card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.1rem; border-top: 1px solid rgba(255,255,255,0.02); padding-top: 0.3rem; }
+        .btn-action-small { background: transparent; border: none; color: var(--label3); font-size: 0.68rem; font-weight: 500; cursor: pointer; text-decoration: underline; }
+        .btn-action-small.delete-trigger { color: var(--red); }
+        .btn-wa-link { background: rgba(37,211,102,0.12); color: var(--whatsapp); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
+        .btn-map-link { background: rgba(90,200,234,0.12); color: var(--orange); padding: 0.15rem 0.45rem; border-radius: 5px; text-decoration: none; font-size: 0.68rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
+
+        .history-card { background: var(--surface); border-radius: 14px; margin-top: 0.8rem; border: 1px dashed var(--surface3); overflow: hidden; }
+        .history-body { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; padding: 0; }
+        .history-card.open .history-body { max-height: 2000px; padding: 0.2rem 0.8rem 0.8rem 0.8rem; }
+
+        .settings-footer { margin-top: 2.5rem; padding-bottom: 1.5rem; text-align: center; font-size: 0.65rem; color: var(--label3); }
+        .empty-state { text-align: center; color: var(--label3); padding: 2.5rem 1rem; font-size: 0.82rem; }
+        .wish-category { font-size: 0.65rem; color: var(--label3); background: var(--surface2); padding: 0.1rem 0.35rem; text-transform: uppercase; font-weight: 700; flex-shrink: 0; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- Estado de sync (badge sobre el botón de nube) --- */
+        .cloud-sync-wrap { position: relative; }
+        .sync-dot { position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--bg); background: var(--label3); transition: background 0.2s; }
+        .sync-dot.dot-synced { background: var(--green); }
+        .sync-dot.dot-pending { background: var(--orange); }
+        .sync-dot.dot-error { background: var(--red); }
+        .sync-dot.dot-nocreds { background: var(--label3); }
+
+        /* --- Toasts --- */
+        .toast-container { position: fixed; top: calc(env(safe-area-inset-top) + 0.6rem); left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 0.4rem; align-items: center; width: 100%; max-width: 460px; padding: 0 0.8rem; pointer-events: none; }
+        .toast { background: var(--surface2); border: 1px solid var(--surface3); color: var(--label); font-size: 0.8rem; font-weight: 600; padding: 0.55rem 0.85rem; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.35); opacity: 0; transform: translateY(-8px); transition: opacity 0.2s, transform 0.2s; max-width: 100%; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.toast-success { border-color: rgba(48,209,88,0.4); }
+        .toast.toast-error { border-color: rgba(255,69,58,0.4); }
+        .toast.toast-info { border-color: rgba(0,122,255,0.4); }
+
+        /* --- Modal de edición completa --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 900; display: none; align-items: flex-end; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-sheet { background: var(--surface); width: 100%; max-width: 500px; border-radius: 18px 18px 0 0; max-height: 88vh; overflow-y: auto; padding: 0.9rem 0.9rem calc(env(safe-area-inset-bottom) + 1rem) 0.9rem; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+        .modal-header h2 { font-size: 1rem; font-weight: 700; }
+        .modal-close-btn { background: var(--surface2); border: none; color: var(--label2); width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; }
+        .modal-body { display: flex; flex-direction: column; gap: 0.5rem; }
+        .modal-actions { display: flex; gap: 0.5rem; margin-top: 0.3rem; }
+        .modal-actions .btn-add { flex: 1; }
+        .btn-remove-photo { background: var(--surface2); border: 1px dashed var(--red); color: var(--red); font-size: 0.72rem; font-weight: 600; padding: 0.4rem; border-radius: 8px; cursor: pointer; }
+
+        /* --- Barra de uso de almacenamiento --- */
+        .storage-bar-wrap { margin-top: 1.2rem; padding: 0 0.1rem; }
+        .storage-bar-track { background: var(--surface2); height: 5px; border-radius: 3px; overflow: hidden; margin-top: 0.3rem; }
+        .storage-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s, background 0.3s; }
+        .storage-bar-fill.warn { background: var(--orange); }
+        .storage-bar-fill.danger { background: var(--red); }
+        .backup-actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 0.6rem; flex-wrap: wrap; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <div>
-                <h1>CinePulse</h1>
-                <div style="font-size:0.75rem; color:var(--label2);">Catálogo Manual Cloud</div>
+                <h1>TripPulse <span class="version-badge">v4.4</span></h1>
+                <div class="subtitle">Timeline & Dependencias Globales</div>
             </div>
-            <div class="header-actions">
-                <button class="btn-panel" id="btnCloudSync" onclick="manualSync()">🔄 Sincronizar</button>
+            <div class="cloud-sync-wrap">
+                <button class="btn-cloud-sync" id="btnCloudSync" onclick="manualSync()">🔄</button>
+                <span class="sync-dot" id="syncDot" title="Estado de sincronización"></span>
             </div>
         </header>
 
-        <div class="form-card" id="formCard">
-            <div class="form-toggle-row" onclick="toggleForm()">
-                <span class="label">➕ Añadir Medio al Catálogo</span>
-                <span class="chevron" style="font-size:0.7rem; color:var(--label3); transition: transform 0.2s;">▼</span>
+        <div class="toast-container" id="toastContainer"></div>
+
+        <div class="trip-manager-bar">
+            <select class="trip-select" id="tripSelector" onchange="changeTripContext(this.value)"></select>
+            <button class="btn-text-action" onclick="createNewTripContext()">＋ Viaje</button>
+            <button class="btn-text-action" style="color:var(--red);" onclick="deleteCurrentTripContext()">🗑️</button>
+        </div>
+
+        <div class="budget-bar">
+            <label>Efectivo pendiente en destino</label>
+            <div class="value" id="valPendingPay">USD 0.00</div>
+        </div>
+
+        <div class="collapsible-panel" id="panelInsurance">
+            <div class="collapsible-header" onclick="document.getElementById('panelInsurance').classList.toggle('open')">
+                <span class="collapsible-title">🛡️ Asistencia Médica</span>
+                <span class="chevron">▼</span>
             </div>
-            <div class="form-body">
-                <div class="form-body-inner">
-                    <div class="form-group" style="background: rgba(0,122,255,0.1); padding: 0.6rem; border-radius: 10px; border: 1px solid rgba(0,122,255,0.3);">
-                        <label style="color: var(--blue);">1. Buscar título o pegar Link/ID de IMDb</label>
-                        <div class="scraper-group">
-                            <input type="text" id="omdbSearchInput" placeholder="Ej: Anniversary 2024 o https://imdb.com/..." onkeypress="if(event.key==='Enter') searchOMDb()">
-                            <button class="btn-scrap" id="btnSearchOMDb" onclick="searchOMDb()">Buscar</button>
+            <div class="collapsible-body">
+                <div class="collapsible-body-inner">
+                    <div class="insurance-grid">
+                        <div class="insurance-item">
+                            <span>Prestador / Póliza</span>
+                            <span id="insProvider">-</span>
                         </div>
-                        <div class="omdb-results-box" id="omdbResults"></div>
-                    </div>
-
-                    <div class="row-inputs" style="grid-template-columns: 1fr 1fr 1fr;">
-                        <div class="form-group">
-                            <label>Disco Físico</label>
-                            <input type="text" id="fDisk" value="Adata" placeholder="Ej: Adata">
-                        </div>
-                        <div class="form-group">
-                            <label>Ubicación</label>
-                            <select id="fCategory">
-                                <option value="all">Raíz</option>
-                                <option value="bere">Bere</option>
-                                <option value="milo">Milo</option>
-                                <option value="series">Series</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo</label>
-                            <select id="fType">
-                                <option value="Película">Película</option>
-                                <option value="Serie">Serie</option>
-                            </select>
+                        <div class="insurance-item">
+                            <span>Vigencia / Cobertura</span>
+                            <span id="insCoverage">-</span>
                         </div>
                     </div>
-                    
-                    <div class="row-inputs">
-                        <div class="form-group">
-                            <label>Título Limpio</label>
-                            <input type="hidden" id="fImdbID">
-                            <input type="text" id="fTitle" placeholder="Ej: Inception">
-                        </div>
-                        <div class="form-group">
-                            <label>Año</label>
-                            <input type="text" id="fYear" placeholder="Ej: 2010">
-                        </div>
-                    </div>
-
-                    <div class="row-inputs">
-                        <div class="form-group">
-                            <label>Rating (IMDb)</label>
-                            <input type="text" id="fRating" placeholder="Ej: 8.8">
-                        </div>
-                        <div class="form-group">
-                            <label>Género · Actores</label>
-                            <input type="text" id="fMeta" placeholder="Ej: Sci-Fi · DiCaprio">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>URL Póster</label>
-                        <input type="text" id="fPoster" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label>Sinopsis</label>
-                        <textarea id="fPlot" rows="3" placeholder="Trama..."></textarea>
-                    </div>
-
-                    <button class="btn-add" onclick="addManualMovie()">Guardar en Catálogo</button>
+                    <div class="insurance-notes" id="insNotes" style="font-size:0.75rem; color:var(--label2); line-height:1.3;"></div>
+                    <button class="btn-text-action" style="padding:0; text-align:left;" onclick="editInsurance()">⚙️ Configurar Seguro</button>
                 </div>
             </div>
         </div>
 
-        <!-- Panel de Búsqueda & Ordenamiento -->
-        <div class="search-row">
-            <input type="text" id="searchInput" class="search-input" placeholder="Buscar en tu catálogo..." oninput="render()">
-            <select id="sortSelect" class="sort-select" onchange="render()">
-                <option value="newest">↕️ Ordenar: Recientes</option>
-                <option value="year_desc">↕️ Año (Nuevo a Viejo)</option>
-                <option value="year_asc">↕️ Año (Viejo a Nuevo)</option>
-                <option value="title_az">↕️ Título (A-Z)</option>
-                <option value="rating_desc">↕️ Rating (Mayor a Menor)</option>
-            </select>
+        <div class="collapsible-panel" id="panelVipCards">
+            <div class="collapsible-header" onclick="document.getElementById('panelVipCards').classList.toggle('open')">
+                <span class="collapsible-title">💳 Tarjetas & Pases VIP</span>
+                <span class="chevron">▼</span>
+            </div>
+            <div class="collapsible-body">
+                <div class="collapsible-body-inner" id="vipCardsContainer"></div>
+            </div>
         </div>
 
-        <div class="filter-panel">
-            <select id="filtShortlist" onchange="render()" style="color: var(--accent); font-weight: bold;">
-                <option value="">Todas las Pelis/Series</option>
-                <option value="true">📌 Próximas a Ver</option>
-            </select>
-            <select id="filtWatched" onchange="render()">
-                <option value="">Vista / No Vista</option>
-                <option value="false">👀 No Vistas</option>
-                <option value="true">✅ Vistas</option>
-            </select>
-            <select id="filtDisk" onchange="render()"><option value="">Cualquier Disco</option></select>
-            <select id="filtLocation" onchange="render()">
-                <option value="">Cualquier Directorio</option>
-                <option value="all">Raíz</option>
-                <option value="bere">Bere</option>
-                <option value="milo">Milo</option>
-                <option value="series">Series</option>
-            </select>
-            <select id="filtType" onchange="render()">
-                <option value="">Cualquier Tipo</option>
-                <option value="Película">Películas</option>
-                <option value="Serie">Series</option>
-            </select>
-            <select id="filtGenre" onchange="render()"><option value="">Cualquier Género</option></select>
+        <div class="form-card" id="formCard">
+            <div class="form-toggle-row" onclick="toggleForm()">
+                <span class="label">➕ Añadir hito a este viaje</span>
+                <span style="font-size:0.7rem; color:var(--label3);">▼</span>
+            </div>
+            <div class="form-body">
+                <div class="form-body-inner">
+                    <div class="row-inputs">
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <select id="fType">
+                                <option value="flight">✈️ Vuelo</option>
+                                <option value="hotel">🏨 Alojamiento</option>
+                                <option value="transfer">🚗 Traslado / Conexión</option>
+                                <option value="pass">🎫 Pase / Acceso Especial</option>
+                                <option value="custom" selected>📌 Recordatorio / Tarea</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Título / Descripción</label>
+                            <input type="text" id="fTitle" placeholder="Ej: Vuelo Jetsmart JA732">
+                        </div>
+                    </div>
+                    <div class="row-inputs">
+                        <div class="form-group">
+                            <label>Fecha de Inicio</label>
+                            <input type="date" id="fDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Hora (24hs)</label>
+                            <input type="time" id="fTime">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>📍 Dirección / Ubicación (Para Alojamientos/Mapas)</label>
+                        <input type="text" id="fAddress" placeholder="Ej: Av. Vitacura 3200, Santiago">
+                    </div>
+                    <div class="row-inputs">
+                        <div class="form-group">
+                            <label>Código Reserva (opcional)</label>
+                            <input type="text" id="fCode">
+                        </div>
+                        <div class="form-group">
+                            <label>¿Tiene pago allá?</label>
+                            <select id="fHasPayment" onchange="document.getElementById('fCostContainer').style.display = this.value === 'yes' ? 'flex' : 'none'">
+                                <option value="no" selected>No requiere pago allá</option>
+                                <option value="yes">Sí, requiere pago allá</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="fCostContainer" style="display: none;">
+                        <label>Monto a pagar allá (USD)</label>
+                        <input type="number" id="fCost" placeholder="0.00" step="0.01" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>📸 Adjuntar Foto o Comprobante (Opcional)</label>
+                        <input type="file" id="fMedia" accept="image/*" style="background:transparent; padding:0;">
+                    </div>
+                    <div class="form-group">
+                        <label>Notas / Detalles</label>
+                        <textarea id="fNotes" rows="2"></textarea>
+                    </div>
+                    <button class="btn-add" id="btnAddMilestone" onclick="addMilestone()">Insertar en Itinerario</button>
+                </div>
+            </div>
         </div>
 
-        <div class="catalog-grid" id="catalogGrid"></div>
+        <div class="section-label">🗺️ Línea de Tiempo Activa</div>
+        <div class="timeline-container" id="activeTimelineContainer"></div>
 
-        <div class="footer">
-            <button class="btn-panel scan" style="margin:0 auto; background: var(--surface2); border-color: var(--surface3); display: none;" id="btnScan" onclick="triggerDirectoryScan()">📁 Scan Directorio (Automático)</button>
-            <input type="file" id="directoryInput" webkitdirectory directory multiple onchange="handleDirectorySelection(event)" style="display: none;">
-            
-            <button class="btn-footer" style="margin-top:0.5rem;" onclick="setupOMDbKey()">⚙️ Configurar OMDb API Key</button>
-            <button class="btn-footer" onclick="forceSetupCredentials()">⚙️ Configurar GitHub Gist (Sync)</button>
-            <button class="btn-footer" style="color: var(--red); margin-top: 1rem; font-weight:bold;" onclick="wipeCatalog()">🗑️ BORRAR TODO EL CATÁLOGO</button>
+        <div class="history-card" id="historyCard">
+            <div class="form-toggle-row" onclick="document.getElementById('historyCard').classList.toggle('open')">
+                <span class="label" style="color:var(--label2);">⏳ Historial de Hitos Pasados</span>
+                <span style="font-size:0.7rem; color:var(--label3);">▼</span>
+            </div>
+            <div class="history-body">
+                <div class="timeline-container" id="historyTimelineContainer" style="margin-top:0.4rem;"></div>
+            </div>
+        </div>
+
+        <div class="settings-footer">
+            <button class="btn-text-action" style="color: var(--label3); text-decoration: underline;" onclick="forceSetupCredentials()">⚙️ Reconfigurar credenciales de la nube</button>
+            <div class="backup-actions">
+                <button class="btn-text-action" onclick="downloadBackup()">⬇️ Descargar backup (JSON)</button>
+                <button class="btn-text-action" onclick="document.getElementById('fImportBackup').click()">⬆️ Restaurar backup</button>
+                <input type="file" id="fImportBackup" accept="application/json" style="display:none;" onchange="importBackup(this.files[0])">
+            </div>
+            <div class="storage-bar-wrap">
+                <span id="storageBarLabel">Uso de almacenamiento local: -</span>
+                <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill" style="width:0%;"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModalOverlay">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h2>✏️ Editar hito</h2>
+                <button class="modal-close-btn" onclick="closeEditModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="row-inputs">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="eType">
+                            <option value="flight">✈️ Vuelo</option>
+                            <option value="hotel">🏨 Alojamiento</option>
+                            <option value="transfer">🚗 Traslado / Conexión</option>
+                            <option value="pass">🎫 Pase / Acceso Especial</option>
+                            <option value="custom">📌 Recordatorio / Tarea</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Título / Descripción</label>
+                        <input type="text" id="eTitle">
+                    </div>
+                </div>
+                <div class="row-inputs">
+                    <div class="form-group">
+                        <label>Fecha de Inicio</label>
+                        <input type="date" id="eDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Hora (24hs)</label>
+                        <input type="time" id="eTime">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>📍 Dirección / Ubicación</label>
+                    <input type="text" id="eAddress">
+                </div>
+                <div class="row-inputs">
+                    <div class="form-group">
+                        <label>Código Reserva (opcional)</label>
+                        <input type="text" id="eCode">
+                    </div>
+                    <div class="form-group">
+                        <label>¿Tiene pago allá?</label>
+                        <select id="eHasPayment" onchange="document.getElementById('eCostContainer').style.display = this.value === 'yes' ? 'flex' : 'none'">
+                            <option value="no">No requiere pago allá</option>
+                            <option value="yes">Sí, requiere pago allá</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="eCostContainer" style="display: none;">
+                    <label>Monto a pagar allá (USD)</label>
+                    <input type="number" id="eCost" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>📸 Reemplazar Foto / Comprobante (Opcional)</label>
+                    <input type="file" id="eMedia" accept="image/*" style="background:transparent; padding:0;">
+                    <button type="button" class="btn-remove-photo" id="eRemovePhotoBtn" onclick="markPhotoForRemoval()">🗑️ Quitar foto actual</button>
+                </div>
+                <div class="form-group">
+                    <label>Notas / Detalles</label>
+                    <textarea id="eNotes" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-add" onclick="saveEditModal()">Guardar cambios</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const FALLBACK_PLOT = "Indexado localmente en frío. Conectate a internet para scrapear OMDb.";
-        
-        let state = JSON.parse(localStorage.getItem('cinepulse_cloud_state_v4')) || { 
-            updatedAt: 0, 
-            omdbKey: '', 
-            movies: [] 
-        };
+        const LEGACY_SEED = [
+            { id: "m1", type: "pass", title: "Fast Pass Migraciones", date: "2026-07-17", time: "14:15", code: "", cost: 0, notes: "Hora reservada confirmada para evitar colas de salida.", checklist: [{text:"Llevar QR impreso", done:false}], hasPayment: false },
+            { id: "m2", type: "flight", title: "Vuelo Jetsmart JA 732 (AEP -> SCL)", date: "2026-07-17", time: "16:30", code: "GEB5VX", cost: 0, notes: "Llega 17:46. Equipaje permitido: 1 valija de ida.", checklist: [{text:"Hacer check-in 24hs antes", done:true}, {text:"Pesar mochila de mano", done:false}], hasPayment: false },
+            { id: "m3", type: "flight", title: "Vuelo Arajet (SCL -> PUJ)", date: "2026-07-18", time: "00:01", code: "VNLKSD", cost: 0, notes: "Llega 08:01am a Punta Cana. Equipaje: 3 valijas totales permitidas.", checklist: [], hasPayment: false },
+            { id: "m4", type: "transfer", title: "Dominican Transfer al Hotel (Bayahibe)", date: "2026-07-18", time: "08:30", code: "", cost: 150, notes: "Contacto WhatsApp: +18299174178. Costo: USD 150 a pagar en efectivo.", checklist: [{text:"Cambiar billetes chicos de USD", done:false}], hasPayment: true },
+            { id: "m5", type: "hotel", title: "Reserva Hotel Bayahibe (Deluxe Tropical)", date: "2026-07-18", time: "15:00", code: "hft6wp2uw", cost: 0, notes: "Salida: 30/07/2026. Regimen Todo Incluido. Ya se encuentra pago por completo (USD 2,508.00).", address: "Bayahibe Highway, Bayahibe 23000", checklist: [], hasPayment: false },
+            { id: "m6", type: "flight", title: "Vuelo Arajet de Regreso (PUJ -> SCL)", date: "2026-07-30", time: "18:39", code: "VNLKSD", cost: 0, notes: "Llega +1 Día a las 02:35am a Santiago. Equipaje: 3 valijas.", checklist: [], hasPayment: false },
+            { id: "m7", type: "hotel", title: "NH Collection Plaza Santiago", date: "2026-07-30", time: "15:00", code: "8D6LZP", cost: 0, notes: "Salida: Dom 02/08 12:00 hs. Ya está paga. Código de ingreso: 8D6LZP", address: "Av. Vitacura 2610, Las Condes, Santiago", checklist: [], hasPayment: false },
+            { id: "m8", type: "hotel", title: "Santiago - Segunda Reserva Alojamiento", date: "2026-08-02", time: "15:00", code: "0175571138", cost: 259.88, notes: "Check-out: Mar 04 Ago 2026 12:00 pm. Monto a pagar allá en el check-in: USD 259.88.", checklist: [], hasPayment: true },
+            { id: "m9", type: "flight", title: "Vuelo Jetsmart JA 737 de Regreso (SCL -> AEP)", date: "2026-08-04", time: "18:09", code: "GEB5VX", cost: 0, notes: "Llega 21:20 a Buenos Aires. Equipaje permitido: 2 valijas de vuelta.", checklist: [], hasPayment: false }
+        ];
 
-        // Data Normalization (Defensive Initialization)
-        if(state.movies && Array.isArray(state.movies)) {
-            state.movies.forEach(m => {
-                if(!m.disk || m.disk.trim() === "") m.disk = "Adata";
-            });
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
-        function toggleForm() {
-            document.getElementById('formCard').classList.toggle('open');
-        }
+        let isFreshInstall = !localStorage.getItem('trippulse_global_v2');
+        let globalState = JSON.parse(localStorage.getItem('trippulse_global_v2'));
+        let isSyncingLock = false;
 
-        function getOMDbKey() { return state.omdbKey || ""; }
-
-        function setupOMDbKey() {
-            const n = prompt("Ingresá tu API Key de OMDb:", state.omdbKey);
-            if(n !== null) {
-                state.omdbKey = n.trim();
-                save();
-                alert("Key de OMDb guardada.");
-            }
+        if (!globalState) {
+            globalState = {
+                updatedAt: 1, 
+                activeTripId: "trip_bayahibe",
+                trips: [{
+                    id: "trip_bayahibe",
+                    name: "Bayahibe + Chile 2026",
+                    cards: [
+                        { id: "c1", name: "Amex Black Santander", passes: 2 },
+                        { id: "c2", name: "Visa Signature Galicia", passes: 4 }
+                    ],
+                    insurance: { provider: "Universal Assistance", coverage: "17 Jul - 04 Ago / Global", notes: "Llevar vouchers digitales a mano." },
+                    milestones: LEGACY_SEED
+                }]
+            };
+            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
         }
+        if (!globalState.updatedAt) globalState.updatedAt = 1;
 
         function getSyncCredentials() {
-            let token = localStorage.getItem('wishlist_gh_token') || '';
-            let gistId = localStorage.getItem('wishlist_gh_gist') || '';
+            let token = localStorage.getItem('wishlist_gh_token');
+            let gistId = localStorage.getItem('wishlist_gh_gist');
+            if (!gistId || gistId.trim() === '') {
+                gistId = '206145949f30bf9663b1f7ba2ed4573a';
+                localStorage.setItem('wishlist_gh_gist', gistId);
+            }
             return { token, gistId };
         }
 
-        function forceSetupCredentials() {
-            const t = prompt("GitHub Token (PAT):", localStorage.getItem('wishlist_gh_token') || '');
-            const g = prompt("Gist ID de respaldo:", localStorage.getItem('wishlist_gh_gist') || '');
-            if(t !== null && g !== null) {
-                localStorage.setItem('wishlist_gh_token', t.trim());
-                localStorage.setItem('wishlist_gh_gist', g.trim());
-                manualSync();
+        async function forceSetupCredentials() {
+            const current = getSyncCredentials();
+            const token = prompt("Pegá tu GitHub Personal Access Token (con permiso 'gist'):", current.token || '');
+            if (token === null) return;
+            const gistId = prompt("Pegá el ID del Gist a usar para sincronizar:", current.gistId || '');
+            if (gistId === null) return;
+            if (!token.trim() || !gistId.trim()) {
+                toast("Token y Gist ID son obligatorios para sincronizar.", "error");
+                return;
             }
+            localStorage.setItem('wishlist_gh_token', token.trim());
+            localStorage.setItem('wishlist_gh_gist', gistId.trim());
+            toast('🔐 Credenciales guardadas. Sincronizando...', 'info');
+            await manualSync();
         }
+
+        function getActiveTrip() {
+            let trip = globalState.trips.find(t => t.id === globalState.activeTripId);
+            if(!trip) { trip = globalState.trips[0]; globalState.activeTripId = trip.id; }
+            if(!trip.cards) {
+                trip.cards = [ { id: "c_" + Date.now(), name: "Pases VIP Disponibles", passes: trip.vipPasses || 0 } ];
+                delete trip.vipPasses;
+            }
+            return trip;
+        }
+
+        let pushDebounceTimer = null;
+        let hasUnsyncedChanges = false;
+        let lastKnownCloudUpdatedAt = 0;
+        let lastSyncHadError = false;
 
         async function save() {
-            state.updatedAt = Date.now();
-            localStorage.setItem('cinepulse_cloud_state_v4', JSON.stringify(state));
-            populateTaxonomies();
+            globalState.updatedAt = Date.now();
+            localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
             render();
-            await autoPushToCloud();
+            hasUnsyncedChanges = true;
+            updateSyncStatus();
+            scheduleCloudPush();
         }
 
-        // ==========================================
-        // SCAN DIRECTORIO AUTO
-        // ==========================================
-        let scanTargetDisk = "Adata";
+        function scheduleCloudPush() {
+            clearTimeout(pushDebounceTimer);
+            pushDebounceTimer = setTimeout(async () => {
+                const result = await autoPushToCloud();
+                if(result.ok) {
+                    hasUnsyncedChanges = false;
+                    lastSyncHadError = false;
+                } else if(result.conflict) {
+                    // No pisamos la nube: dejamos las cosas como están y avisamos suave.
+                    toast('⚠️ Hay cambios más nuevos en la nube. Tocá 🔄 para traerlos antes de seguir editando.', 'error', 5000);
+                } else if(!result.noCreds) {
+                    lastSyncHadError = true;
+                }
+                updateSyncStatus();
+            }, 1500);
+        }
 
-        function triggerDirectoryScan() {
-            const d = prompt("¿A qué Disco Físico pertenecen estos archivos?", "Adata");
-            if (d !== null) {
-                scanTargetDisk = d.trim() || "Adata";
-                document.getElementById('directoryInput').click();
+        function updateSyncStatus() {
+            const dot = document.getElementById('syncDot');
+            if(!dot) return;
+            const creds = getSyncCredentials();
+            dot.classList.remove('dot-synced', 'dot-pending', 'dot-error', 'dot-nocreds');
+            if(!creds.token) {
+                dot.classList.add('dot-nocreds');
+                dot.title = 'Sin credenciales configuradas';
+            } else if(lastSyncHadError) {
+                dot.classList.add('dot-error');
+                dot.title = 'Error en la última sincronización';
+            } else if(hasUnsyncedChanges) {
+                dot.classList.add('dot-pending');
+                dot.title = 'Cambios pendientes de subir';
+            } else {
+                dot.classList.add('dot-synced');
+                dot.title = 'Todo sincronizado';
             }
         }
 
-        function cleanReleaseName(filename) {
-            let name = filename.replace(/\.[^/.]+$/, "");
-            name = name.replace(/\.(2160p|1080p|720p|4k|bluray|x264|x265|web|webdl|webrip|hdr|hevc|aac5\.1|10bit|h265|ita|eng|yts|brrip|hdrip|dvdrip|graces|cyber|turko|oft|mx|bz|gg|world|trial).*/i, '');
-            name = name.replace(/\b(19|20)\d{2}\b/g, '');
-            name = name.replace(/[._\-]/g, ' ').replace(/\s+/g, ' ').trim();
-            return name;
+        async function changeTripContext(id) {
+            globalState.activeTripId = id;
+            await save();
         }
 
-        async function handleDirectorySelection(event) {
-            const files = event.target.files;
-            if(!files || files.length === 0) return;
+        async function createNewTripContext() {
+            const name = prompt("Ingresá el destino o nombre del nuevo viaje:");
+            if (!name || !name.trim()) return;
+            const newId = "trip_" + Date.now();
+            globalState.trips.push({
+                id: newId,
+                name: name.trim(),
+                cards: [
+                    { id: "c1_" + Date.now(), name: "Amex (Fast Pass)", passes: 0 },
+                    { id: "c2_" + Date.now(), name: "Visa (VIP Lounges)", passes: 0 }
+                ],
+                insurance: { provider: "", coverage: "", notes: "" },
+                milestones: []
+            });
+            globalState.activeTripId = newId;
+            await save();
+        }
 
-            const apiKey = getOMDbKey();
-            if(!apiKey) alert("Sin API Key. Se leerán los nombres pero sin metadata.");
+        async function deleteCurrentTripContext() {
+            if (globalState.trips.length <= 1) {
+                toast("No podés eliminar tu único viaje activo.", "error");
+                return;
+            }
+            const activeTrip = getActiveTrip();
+            if (confirm(`¿Seguro que querés borrar por completo el viaje "${activeTrip.name}"?`)) {
+                globalState.trips = globalState.trips.filter(t => t.id !== activeTrip.id);
+                globalState.activeTripId = globalState.trips[0].id;
+                await save();
+            }
+        }
 
-            const btn = document.getElementById('btnScan');
-            btn.classList.add('spinning');
-            btn.textContent = "...";
+        function toggleForm() {
+            const card = document.getElementById('formCard');
+            card.classList.toggle('open');
+        }
 
-            const validExtensions = ['.mkv', '.mp4', '.avi', '.mov'];
-            const currentMoviesMap = { ...state.movies.reduce((acc, m) => ({ ...acc, [m.rawName]: m }), {}) };
-            const detectedMovies = [];
+        async function updateCardCounter(cardId, amount) {
+            const trip = getActiveTrip();
+            const card = trip.cards.find(c => c.id === cardId);
+            if (card) {
+                card.passes = Math.max(0, card.passes + amount);
+                await save();
+            }
+        }
 
-            for(let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const relativePath = file.webkitRelativePath || file.name;
-                const lowerPath = relativePath.toLowerCase();
+        async function deleteCardInline(cardId) {
+            const trip = getActiveTrip();
+            const card = trip.cards.find(c => c.id === cardId);
+            if (card && confirm(`¿Seguro que querés eliminar la tarjeta "${card.name}"?`)) {
+                trip.cards = trip.cards.filter(c => c.id !== cardId);
+                await save();
+            }
+        }
 
-                if(!validExtensions.some(ext => lowerPath.endsWith(ext))) continue;
+        async function addNewCardInline() {
+            const name = prompt("Nombre o Banco de la nueva tarjeta:");
+            if(!name || !name.trim()) return;
+            const trip = getActiveTrip();
+            trip.cards.push({ id: "c_" + Date.now(), name: name.trim(), passes: 0 });
+            await save();
+        }
 
-                const rawName = file.name.replace(/\.[^/.]+$/, "");
+        async function editInsurance() {
+            const trip = getActiveTrip();
+            const provider = prompt("Nombre del Seguro / Nro Póliza:", trip.insurance.provider);
+            const coverage = prompt("Vigencia / Alcance:", trip.insurance.coverage);
+            const notes = prompt("Detalles adicionales:", trip.insurance.notes);
+            
+            if (provider !== null && coverage !== null && notes !== null) {
+                trip.insurance = { provider, coverage, notes };
+                await save();
+            }
+        }
 
-                let category = 'all';
-                if(lowerPath.includes('/bere/')) category = 'bere';
-                else if(lowerPath.includes('/milo/')) category = 'milo';
-                else if(lowerPath.includes('/series/')) category = 'series';
-                
-                let defaultType = category === 'series' ? 'Serie' : 'Película';
+        function processImageAttachment(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const max_size = 800; 
+                        if (width > height) {
+                            if (width > max_size) { height *= max_size / width; width = max_size; }
+                        } else {
+                            if (height > max_size) { width *= max_size / height; height = max_size; }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
 
-                if(currentMoviesMap[rawName]) {
-                    let existingMovie = currentMoviesMap[rawName];
-                    existingMovie.category = category;
-                    existingMovie.type = existingMovie.type || defaultType;
-                    existingMovie.disk = existingMovie.disk || scanTargetDisk;
-
-                    if (apiKey && (existingMovie.plot === FALLBACK_PLOT || existingMovie.rating === "0.0" || existingMovie.rating === "")) {
-                        const cleanedTitle = cleanReleaseName(file.name);
-                        const yearMatch = file.name.match(/\b(19|20)\d{2}\b/);
-                        const yearParam = yearMatch ? `&y=${yearMatch[0]}` : '';
-
-                        try {
-                            await new Promise(r => setTimeout(r, 250));
-                            const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&t=${encodeURIComponent(cleanedTitle)}${yearParam}&plot=full`);
-                            const data = await res.json();
-                            if(data && data.Response === "True") {
-                                const rawActors = data.Actors ? data.Actors.split(',') : [];
-                                existingMovie.imdbID = data.imdbID || existingMovie.imdbID;
-                                existingMovie.title = data.Title || existingMovie.title;
-                                existingMovie.year = data.Year || existingMovie.year;
-                                existingMovie.rating = data.imdbRating !== "N/A" ? data.imdbRating : "0.0";
-                                existingMovie.meta = `${data.Genre || 'Varios'} · ${rawActors.slice(0,3).map(a=>a.trim()).join(', ')}`;
-                                existingMovie.poster = data.Poster !== "N/A" ? data.Poster : "";
-                                existingMovie.plot = data.Plot !== "N/A" ? data.Plot : existingMovie.plot;
-                                existingMovie.type = data.Type === "series" ? "Serie" : "Película";
-                            }
-                        } catch(err) { console.log("Fallo red re-scrape"); }
-                    }
-                    detectedMovies.push(existingMovie);
-                    continue;
-                }
-
-                const cleanedTitle = cleanReleaseName(file.name);
-                const yearMatch = file.name.match(/\b(19|20)\d{2}\b/);
-                const yearParam = yearMatch ? `&y=${yearMatch[0]}` : '';
-
-                let movieEntry = {
-                    id: 'v_' + Date.now() + '_' + i,
-                    imdbID: '', title: cleanedTitle, year: yearMatch ? yearMatch[0] : "N/A",
-                    rating: "0.0", category: category, type: defaultType, disk: scanTargetDisk,
-                    meta: "Desconocido", poster: "", plot: FALLBACK_PLOT, rawName: rawName,
-                    watched: false, shortlisted: false
+                        // Baja la calidad hasta que el adjunto pese menos de ~700KB en base64 (o toque el piso de calidad)
+                        const MAX_BYTES = 700 * 1024;
+                        let quality = 0.6;
+                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        while (dataUrl.length * 0.75 > MAX_BYTES && quality > 0.25) {
+                            quality -= 0.1;
+                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        }
+                        resolve(dataUrl);
+                    };
+                    img.onerror = () => reject(new Error('No se pudo procesar la imagen.'));
+                    img.src = e.target.result;
                 };
-
-                if(apiKey) {
-                    try {
-                        await new Promise(r => setTimeout(r, 250));
-                        const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&t=${encodeURIComponent(cleanedTitle)}${yearParam}&plot=full`);
-                        const data = await res.json();
-                        if(data && data.Response === "True") {
-                            const rawActors = data.Actors ? data.Actors.split(',') : [];
-                            movieEntry.imdbID = data.imdbID || "";
-                            movieEntry.title = data.Title || movieEntry.title;
-                            movieEntry.year = data.Year || movieEntry.year;
-                            movieEntry.rating = data.imdbRating !== "N/A" ? data.imdbRating : "0.0";
-                            movieEntry.meta = `${data.Genre || 'Varios'} · ${rawActors.slice(0,3).map(a=>a.trim()).join(', ')}`;
-                            movieEntry.poster = data.Poster !== "N/A" ? data.Poster : "";
-                            movieEntry.plot = data.Plot !== "N/A" ? data.Plot : movieEntry.plot;
-                            movieEntry.type = data.Type === "series" ? "Serie" : "Película";
-                        }
-                    } catch(err) {}
-                }
-                detectedMovies.push(movieEntry);
-            }
-
-            state.movies = detectedMovies;
-            await save();
-
-            document.getElementById('directoryInput').value = '';
-            btn.classList.remove('spinning');
-            btn.textContent = "📁 Scan Directorio (Automático)";
-            alert(`Directorio procesado. ${detectedMovies.length} archivos en disco "${scanTargetDisk}".`);
+                reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+                reader.readAsDataURL(file);
+            });
         }
 
-        // ==========================================
-        // BÚSQUEDA OMDB MANUAL
-        // ==========================================
-        async function searchOMDb() {
-            const query = document.getElementById('omdbSearchInput').value.trim();
-            const apiKey = getOMDbKey();
-            if (!apiKey) { alert("Configurá tu API Key de OMDb primero."); return; }
-            if (!query) return;
+        // --- Uso de almacenamiento local ---
+        function estimateStorageBytes() {
+            const str = localStorage.getItem('trippulse_global_v2') || '';
+            return new Blob([str]).size;
+        }
 
-            const resDiv = document.getElementById('omdbResults');
-            const btnSearch = document.getElementById('btnSearchOMDb');
-            
-            resDiv.style.display = "flex";
-            resDiv.innerHTML = "<div style='color:var(--label2); text-align:center; padding:1rem;'>Buscando...</div>";
-            btnSearch.disabled = true;
+        function updateStorageBar() {
+            const bytes = estimateStorageBytes();
+            const mb = bytes / (1024 * 1024);
+            const QUOTA_MB = 5; // límite aproximado y conservador de localStorage
+            const pct = Math.min(100, (mb / QUOTA_MB) * 100);
+            const label = document.getElementById('storageBarLabel');
+            const fill = document.getElementById('storageBarFill');
+            if(label) label.textContent = `Uso de almacenamiento local: ${mb.toFixed(2)} MB de ~${QUOTA_MB} MB`;
+            if(fill) {
+                fill.style.width = `${pct}%`;
+                fill.classList.remove('warn', 'danger');
+                if(pct >= 90) fill.classList.add('danger');
+                else if(pct >= 65) fill.classList.add('warn');
+            }
+        }
 
+        // --- Backup manual ---
+        function downloadBackup() {
+            const dataStr = JSON.stringify(globalState, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const ts = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `trippulse_backup_${ts}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast('⬇️ Backup descargado.', 'success');
+        }
+
+        async function importBackup(file) {
+            if(!file) return;
+            if(!confirm('Esto va a REEMPLAZAR todo tu itinerario local (todos los viajes) por el contenido del backup. ¿Continuar?')) {
+                document.getElementById('fImportBackup').value = '';
+                return;
+            }
             try {
-                const imdbMatch = query.match(/tt\d{7,10}/);
-                if (imdbMatch) {
-                    const imdbID = imdbMatch[0];
-                    const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${imdbID}&plot=full`);
-                    const data = await res.json();
-                    
-                    if (data.Response === "True") {
-                        const typeLabel = data.Type === 'series' ? 'Serie' : 'Película';
-                        const posterUrl = data.Poster !== 'N/A' ? data.Poster : '';
-                        resDiv.innerHTML = `
-                        <div class="omdb-item" onclick="selectOMDbResult('${data.imdbID}')">
-                            <img src="${posterUrl}" alt="Póster">
-                            <div class="omdb-item-info">
-                                <span style="font-size:0.85rem; font-weight:700; color:var(--label);">${data.Title}</span>
-                                <span style="font-size:0.7rem; color:var(--label2);">${data.Year} · ${typeLabel} (Match Directo)</span>
-                            </div>
-                        </div>`;
-                    } else {
-                        resDiv.innerHTML = `<div style="color:var(--red); font-size:0.8rem; text-align:center; padding:0.5rem;">🚨 ID de IMDb inválido.</div>`;
-                    }
-                } else {
-                    let searchUrl = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(query)}`;
-                    const yearMatch = query.match(/\b(19|20)\d{2}\b/);
-                    
-                    if(yearMatch) {
-                        const cleanTitle = query.replace(yearMatch[0], '').trim();
-                        searchUrl = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(cleanTitle)}&y=${yearMatch[0]}`;
-                    }
-
-                    const res = await fetch(searchUrl);
-                    const data = await res.json();
-                    
-                    if (data.Response === "True") {
-                        resDiv.innerHTML = data.Search.map(m => {
-                            const typeLabel = m.Type === 'series' ? 'Serie' : 'Película';
-                            const posterUrl = m.Poster !== 'N/A' ? m.Poster : '';
-                            return `
-                            <div class="omdb-item" onclick="selectOMDbResult('${m.imdbID}')">
-                                <img src="${posterUrl}" alt="Póster">
-                                <div class="omdb-item-info">
-                                    <span style="font-size:0.85rem; font-weight:700; color:var(--label);">${m.Title}</span>
-                                    <span style="font-size:0.7rem; color:var(--label2);">${m.Year} · ${typeLabel}</span>
-                                </div>
-                            </div>`;
-                        }).join('');
-                    } else {
-                        let errorMsg = data.Error || "Error desconocido";
-                        if (errorMsg === "Too many results.") errorMsg = "Demasiados resultados. Agregá el año o pegá el link de IMDb.";
-                        else if (errorMsg === "Movie not found!") errorMsg = `No se encontraron coincidencias.`;
-                        else if (errorMsg === "Invalid API key!") errorMsg = "La API Key de OMDb es inválida.";
-                        resDiv.innerHTML = `<div style="color:var(--red); font-size:0.8rem; text-align:center; padding:0.5rem;">🚨 ${errorMsg}</div>`;
-                    }
-                }
-            } catch (e) {
-                resDiv.innerHTML = "<div style='color:var(--red); font-size:0.8rem; text-align:center; padding:0.5rem;'>Error de red al consultar OMDb.</div>";
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                if(!parsed || !Array.isArray(parsed.trips)) throw new Error('Formato inválido');
+                globalState = parsed;
+                if(!globalState.updatedAt) globalState.updatedAt = Date.now();
+                if(!globalState.activeTripId && globalState.trips[0]) globalState.activeTripId = globalState.trips[0].id;
+                localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+                render();
+                toast('✅ Backup restaurado localmente. Tocá 🔄 para subirlo a la nube.', 'success', 4500);
+            } catch(e) {
+                toast('❌ El archivo no es un backup válido de TripPulse.', 'error');
             } finally {
-                btnSearch.disabled = false;
+                document.getElementById('fImportBackup').value = '';
             }
         }
 
-        async function selectOMDbResult(imdbID) {
-            const apiKey = getOMDbKey();
-            const resDiv = document.getElementById('omdbResults');
-            resDiv.innerHTML = "<div style='color:var(--accent); text-align:center; padding:1rem;'>Descargando ficha completa...</div>";
-            
-            try {
-                const res = await fetch(`https://www.omdbapi.com/?apikey=${apiKey}&i=${imdbID}&plot=full`);
-                const data = await res.json();
-                if (data.Response === "True") {
-                    document.getElementById('fImdbID').value = imdbID || "";
-                    document.getElementById('fTitle').value = data.Title || "";
-                    document.getElementById('fYear').value = data.Year || "";
-                    document.getElementById('fRating').value = data.imdbRating !== "N/A" ? data.imdbRating : "0.0";
-                    document.getElementById('fType').value = data.Type === "series" ? "Serie" : "Película";
-
-                    const rawActors = data.Actors ? data.Actors.split(',') : [];
-                    const actors = rawActors.slice(0,3).map(a => a.trim());
-                    document.getElementById('fMeta').value = `${data.Genre || 'Varios'} · ${actors.join(', ')}`;
-                    document.getElementById('fPoster').value = data.Poster !== "N/A" ? data.Poster : "";
-                    document.getElementById('fPlot').value = data.Plot !== "N/A" ? data.Plot : "";
-
-                    if(data.Type === "series") {
-                        document.getElementById('fCategory').value = "series";
-                        if(data.totalSeasons && data.totalSeasons !== "N/A") {
-                            window.tempSeriesTotalSeasons = data.totalSeasons;
-                        }
-                    }
-
-                    resDiv.style.display = "none";
-                }
-            } catch (e) {
-                alert("Error obteniendo detalles.");
-                resDiv.style.display = "none";
-            }
-        }
-
-        async function addManualMovie() {
-            const title = document.getElementById('fTitle').value.trim();
-            if (!title) { alert("El Título es obligatorio."); return; }
-
-            const category = document.getElementById('fCategory').value;
+        async function addMilestone() {
             const type = document.getElementById('fType').value;
-            const disk = document.getElementById('fDisk').value.trim() || "Adata";
-            
-            let seriesDefaultInfo = "";
-            if (type === "Serie" && window.tempSeriesTotalSeasons) {
-                seriesDefaultInfo = `${window.tempSeriesTotalSeasons} Temporadas (Info OMDb)`;
-                window.tempSeriesTotalSeasons = null;
+            const title = document.getElementById('fTitle').value.trim();
+            const date = document.getElementById('fDate').value;
+            const time = document.getElementById('fTime').value || "12:00";
+            const address = document.getElementById('fAddress').value.trim();
+            const code = document.getElementById('fCode').value.trim();
+            const hasPayment = document.getElementById('fHasPayment').value === 'yes';
+            const cost = hasPayment ? (parseFloat(document.getElementById('fCost').value) || 0) : 0;
+            const notes = document.getElementById('fNotes').value.trim();
+            const fileInput = document.getElementById('fMedia');
+
+            if (!title || !date) {
+                toast("Por favor completá el título y la fecha del hito.", "error");
+                return;
             }
 
-            const newMovie = {
-                id: 'm_' + Date.now(),
-                imdbID: document.getElementById('fImdbID').value.trim(),
-                title: title,
-                year: document.getElementById('fYear').value.trim() || "N/A",
-                rating: document.getElementById('fRating').value.trim() || "0.0",
-                category: category,
-                type: type,
-                disk: disk,
-                meta: document.getElementById('fMeta').value.trim() || "Desconocido",
-                poster: document.getElementById('fPoster').value.trim(),
-                plot: document.getElementById('fPlot').value.trim() || "Sin sinopsis cargada.",
-                watched: false,
-                shortlisted: false,
-                seriesInfo: seriesDefaultInfo,
-                rawName: title.toLowerCase().replace(/[^a-z0-9]/g, '_')
-            };
+            const btn = document.getElementById('btnAddMilestone');
+            btn.disabled = true;
+            btn.textContent = "Procesando Adjunto...";
 
-            state.movies.unshift(newMovie);
-            await save();
-
-            // Limpieza silenciosa sin cerrar modal
-            document.getElementById('fImdbID').value = "";
-            document.getElementById('fTitle').value = ""; document.getElementById('fYear').value = "";
-            document.getElementById('fRating').value = ""; document.getElementById('fMeta').value = "";
-            document.getElementById('fPoster').value = ""; document.getElementById('fPlot').value = "";
-            document.getElementById('omdbSearchInput').value = ""; document.getElementById('omdbResults').style.display = "none";
-            
-            document.getElementById('omdbSearchInput').focus();
-        }
-
-        // ==========================================
-        // ACCIONES DE TARJETA
-        // ==========================================
-        async function toggleWatched(id) {
-            const m = state.movies.find(m => m.id === id);
-            if(!m) return;
-            m.watched = !m.watched;
-            await save();
-        }
-
-        async function toggleShortlist(id) {
-            const m = state.movies.find(m => m.id === id);
-            if(!m) return;
-            m.shortlisted = !m.shortlisted;
-            await save();
-        }
-
-        async function showSeriesDetails(id) {
-            const m = state.movies.find(m => m.id === id);
-            if(!m) return;
-            const currentInfo = m.seriesInfo || "No especificado";
-            const updated = prompt(`Info de Descargas para "${m.title}":\n\nAnotá qué temporadas/episodios tenés en el directorio:`, currentInfo);
-            if(updated !== null) {
-                m.seriesInfo = updated.trim();
-                await save();
-            }
-        }
-
-        async function editMovieInline(id) {
-            const m = state.movies.find(m => m.id === id);
-            if(!m) return;
-            const t = prompt("Modificar Título:", m.title);
-            const d = prompt("Modificar Disco Físico (Adata, Expansion, etc):", m.disk || "Adata");
-            const r = prompt("Modificar Rating (IMDb):", m.rating);
-            if(t !== null && r !== null && d !== null) {
-                m.title = t.trim() || m.title;
-                m.disk = d.trim() || m.disk;
-                m.rating = r.trim() || m.rating;
-                await save();
-            }
-        }
-
-        async function deleteMovie(id) {
-            if(confirm("¿Quitar definitivamente del catálogo?")) {
-                state.movies = state.movies.filter(m => m.id !== id);
-                await save();
-            }
-        }
-
-        async function wipeCatalog() {
-            if (confirm("⚠️ ATENCIÓN: Estás a punto de borrar TODO tu catálogo de películas y series.") && 
-                confirm("🚨 ¿ESTÁS ABSOLUTAMENTE SEGURO? Esta acción es irreversible.")) {
-                state.movies = [];
-                await save();
-                alert("Catálogo reiniciado a cero exitosamente.");
-            }
-        }
-
-        // ==========================================
-        // SYNC Y RENDER
-        // ==========================================
-        let isSyncingLock = false;
-        
-        async function autoPullFromCloud(isForcedManual = false) {
-            if(isSyncingLock && !isForcedManual) return;
-            const creds = getSyncCredentials();
-            if(!creds.token || !creds.gistId) return;
-
-            const syncBtn = document.getElementById('btnCloudSync');
-            if(syncBtn) syncBtn.classList.add('spinning');
-
-            try {
-                const res = await fetch(`https://api.github.com/gists/${creds.gistId}?_cb=${Date.now()}`, {
-                    headers: { 'Authorization': `token ${creds.token}` }
-                });
-                if(res.ok) {
-                    const gistData = await res.json();
-                    if(gistData.files && gistData.files["movie_catalog.json"]) {
-                        const cloudContent = JSON.parse(gistData.files["movie_catalog.json"].content);
-                        const cloudUpdatedAt = cloudContent.updatedAt || 0;
-                        
-                        if(cloudUpdatedAt > state.updatedAt || isForcedManual) {
-                            state = cloudContent;
-                            
-                            // Data Normalization (Defensive Initialization)
-                            if(state.movies && Array.isArray(state.movies)) {
-                                state.movies.forEach(m => {
-                                    if(!m.disk || m.disk.trim() === "") m.disk = "Adata";
-                                });
-                            }
-
-                            localStorage.setItem('cinepulse_cloud_state_v4', JSON.stringify(state));
-                            populateTaxonomies();
-                            render();
-                        } else if(state.updatedAt > cloudUpdatedAt) {
-                            await autoPushToCloud(true);
-                        }
-                    }
+            let compressedImage = "";
+            if(fileInput.files && fileInput.files[0]) {
+                try {
+                    compressedImage = await processImageAttachment(fileInput.files[0]);
+                } catch(e) {
+                    toast('⚠️ No se pudo procesar la foto adjunta, se guardó el hito sin ella.', 'error');
                 }
-            } catch(e) { 
-                console.log("Modo offline activo."); 
-            } finally { if(syncBtn) syncBtn.classList.remove('spinning'); }
+            }
+
+            const trip = getActiveTrip();
+            trip.milestones.push({
+                id: 'm_' + Date.now(),
+                type, title, date, time, code, cost, notes, address, passed: false, hasPayment,
+                image: compressedImage,
+                checklist: []
+            });
+
+            document.getElementById('fTitle').value = '';
+            document.getElementById('fCode').value = '';
+            document.getElementById('fAddress').value = '';
+            document.getElementById('fCost').value = '0';
+            document.getElementById('fHasPayment').value = 'no';
+            document.getElementById('fCostContainer').style.display = 'none';
+            document.getElementById('fNotes').value = '';
+            document.getElementById('fMedia').value = '';
+            
+            btn.disabled = false;
+            btn.textContent = "Insertar en Itinerario";
+            
+            toggleForm();
+            await save();
         }
 
-        async function autoPushToCloud(bypassLock = false) {
-            if(isSyncingLock && !bypassLock) return;
-            const creds = getSyncCredentials();
-            if(!creds.token || !creds.gistId) return;
+        async function deleteMilestone(id) {
+            if(confirm("¿Remover esta reserva o hito del viaje?")) {
+                const trip = getActiveTrip();
+                trip.milestones = trip.milestones.filter(m => m.id !== id);
+                await save();
+            }
+        }
+
+        async function toggleMilestonePassed(id) {
+            const trip = getActiveTrip();
+            const milestone = trip.milestones.find(m => m.id === id);
+            if(milestone) {
+                milestone.passed = !milestone.passed;
+                await save();
+            }
+        }
+
+        // --- Modal de edición completa ---
+        let editingMilestoneId = null;
+        let editingRemovePhoto = false;
+
+        function openEditModal(id) {
+            const trip = getActiveTrip();
+            const milestone = trip.milestones.find(m => m.id === id);
+            if(!milestone) return;
+            editingMilestoneId = id;
+            editingRemovePhoto = false;
+
+            document.getElementById('eType').value = milestone.type;
+            document.getElementById('eTitle').value = milestone.title || '';
+            document.getElementById('eDate').value = milestone.date || '';
+            document.getElementById('eTime').value = milestone.time || '';
+            document.getElementById('eAddress').value = milestone.address || '';
+            document.getElementById('eCode').value = milestone.code || '';
+            const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
+            document.getElementById('eHasPayment').value = hasPay ? 'yes' : 'no';
+            document.getElementById('eCostContainer').style.display = hasPay ? 'flex' : 'none';
+            document.getElementById('eCost').value = milestone.cost || 0;
+            document.getElementById('eNotes').value = milestone.notes || '';
+            document.getElementById('eMedia').value = '';
+
+            const removeBtn = document.getElementById('eRemovePhotoBtn');
+            removeBtn.style.display = milestone.image ? 'block' : 'none';
+            removeBtn.textContent = '🗑️ Quitar foto actual';
+
+            document.getElementById('editModalOverlay').classList.add('open');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModalOverlay').classList.remove('open');
+            editingMilestoneId = null;
+            editingRemovePhoto = false;
+        }
+
+        function markPhotoForRemoval() {
+            editingRemovePhoto = true;
+            document.getElementById('eRemovePhotoBtn').textContent = '✔️ Se quitará al guardar';
+        }
+
+        async function saveEditModal() {
+            if(!editingMilestoneId) return;
+            const trip = getActiveTrip();
+            const milestone = trip.milestones.find(m => m.id === editingMilestoneId);
+            if(!milestone) return;
+
+            const title = document.getElementById('eTitle').value.trim();
+            const date = document.getElementById('eDate').value;
+            if(!title || !date) {
+                toast('Completá al menos el título y la fecha.', 'error');
+                return;
+            }
+
+            milestone.type = document.getElementById('eType').value;
+            milestone.title = title;
+            milestone.date = date;
+            milestone.time = document.getElementById('eTime').value || '12:00';
+            milestone.address = document.getElementById('eAddress').value.trim();
+            milestone.code = document.getElementById('eCode').value.trim();
+            milestone.hasPayment = document.getElementById('eHasPayment').value === 'yes';
+            milestone.cost = milestone.hasPayment ? (parseFloat(document.getElementById('eCost').value) || 0) : 0;
+            milestone.notes = document.getElementById('eNotes').value.trim();
+
+            const fileInput = document.getElementById('eMedia');
+            if(fileInput.files && fileInput.files[0]) {
+                try {
+                    milestone.image = await processImageAttachment(fileInput.files[0]);
+                } catch(e) {
+                    toast('⚠️ No se pudo procesar la nueva foto, se mantuvo la anterior.', 'error');
+                }
+            } else if(editingRemovePhoto) {
+                milestone.image = '';
+            }
+
+            closeEditModal();
+            await save();
+            toast('✅ Hito actualizado.', 'success');
+        }
+
+        // --- Sistema de toasts (feedback no bloqueante) ---
+        function toast(message, type = 'info', duration = 3200) {
+            const container = document.getElementById('toastContainer');
+            if(!container) { console.log(message); return; }
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.textContent = message;
+            container.appendChild(el);
+            requestAnimationFrame(() => el.classList.add('show'));
+            setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => el.remove(), 250);
+            }, duration);
+        }
+
+        async function toggleTask(milestoneId, taskIndex) {
+            const trip = getActiveTrip();
+            const milestone = trip.milestones.find(m => m.id === milestoneId);
+            if(milestone && milestone.checklist[taskIndex]) {
+                milestone.checklist[taskIndex].done = !milestone.checklist[taskIndex].done;
+                await save();
+            }
+        }
+
+        async function addTaskInline(e, milestoneId) {
+            if (e.key === 'Enter' || e.type === 'click') {
+                const input = document.getElementById(`input_add_${milestoneId}`);
+                const text = input.value.trim();
+                if(!text) return;
+
+                const trip = getActiveTrip();
+                const milestone = trip.milestones.find(m => m.id === milestoneId);
+                if(milestone) {
+                    if(!milestone.checklist) milestone.checklist = [];
+                    milestone.checklist.push({ text, done: false });
+                    input.value = '';
+                    await save();
+                }
+            }
+        }
+
+        function formatDisplayDate(dateStr) {
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
+            const parts = dateStr.split('-');
+            const date = new Date(parts[0], parts[1] - 1, parts[2]);
+            return date.toLocaleDateString('es-AR', options);
+        }
+
+        function shareWhatsApp(id) {
+            const trip = getActiveTrip();
+            const item = trip.milestones.find(m => m.id === id);
+            let text = `✈️ *TripPulse Itinerario* — _Reserva de ${trip.name}_\n\n`;
+            text += `*Hito:* ${item.title}\n`;
+            text += `*Fecha/Hora:* ${formatDisplayDate(item.date)} a las ${item.time}hs\n`;
+            if(item.code) text += `*Código de Reserva:* ${item.code}\n`;
+            if(item.address) text += `*Dirección:* ${item.address}\n`;
+            if(item.cost > 0) text += `*Monto pendiente:* USD ${item.cost}\n`;
+            if(item.notes) text += `*Detalles:* ${item.notes}\n`;
+
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function getGoogleCalendarUrl(milestone) {
+            const base = "https://calendar.google.com/calendar/render?action=TEMPLATE";
+            const title = `TripPulse [${milestone.type.toUpperCase()}]: ${milestone.title}`;
+            const cleanTime = milestone.time.replace(/:/g, '');
+            const [y, m, d] = milestone.date.split('-').map(Number);
+            const startDate = new Date(y, m - 1, d, parseInt(milestone.time.split(':')[0]) || 0, parseInt(milestone.time.split(':')[1]) || 0);
+            const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+            const pad = n => String(n).padStart(2, '0');
+            const fmt = dt => `${dt.getFullYear()}${pad(dt.getMonth() + 1)}${pad(dt.getDate())}T${pad(dt.getHours())}${pad(dt.getMinutes())}00`;
+            const startStr = fmt(startDate);
+            const endStr = fmt(endDate);
             
+            let details = milestone.notes || '';
+            if(milestone.code) details += `\nReserva: ${milestone.code}`;
+            if(milestone.address) details += `\n📍 Lugar: ${milestone.address}`;
+            if(milestone.cost > 0) details += `\n💰 Pendiente: USD ${milestone.cost}`;
+            
+            return `${base}&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(milestone.address || '')}`;
+        }
+
+        // Devuelve { ok, adopted, error } — adopted=true si se pisó el estado local con el de la nube
+        async function autoPullFromCloud(isForcedManual = false) {
+            if(isSyncingLock && !isForcedManual) return { ok: false };
+            const creds = getSyncCredentials();
+            if(!creds.token || !creds.gistId) return { ok: false, noCreds: true };
             isSyncingLock = true;
             const syncBtn = document.getElementById('btnCloudSync');
             if(syncBtn) syncBtn.classList.add('spinning');
-
             try {
-                await fetch(`https://api.github.com/gists/${creds.gistId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `token ${creds.token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ files: { "movie_catalog.json": { content: JSON.stringify(state, null, 2) } } })
+                const res = await fetch(`https://api.github.com/gists/${creds.gistId}?_cb=${Date.now()}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `token ${creds.token}` }
                 });
+                if(!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+
+                const gistData = await res.json();
+                if(!gistData.files || !gistData.files["travel_timeline.json"]) return { ok: true, adopted: false };
+
+                const cloudContent = JSON.parse(gistData.files["travel_timeline.json"].content);
+                const cloudUpdatedAt = cloudContent.updatedAt || 0;
+                lastKnownCloudUpdatedAt = Math.max(lastKnownCloudUpdatedAt, cloudUpdatedAt);
+
+                // Solo se adopta la versión de la nube si es más nueva que la local (o instalación nueva sin datos).
+                // Un sync manual NUNCA debe pisar cambios locales más recientes todavía no subidos.
+                if(cloudUpdatedAt > globalState.updatedAt || (isFreshInstall && cloudContent.trips && cloudContent.trips.length > 0)) {
+                    globalState = cloudContent;
+                    localStorage.setItem('trippulse_global_v2', JSON.stringify(globalState));
+                    isFreshInstall = false;
+                    hasUnsyncedChanges = false;
+                    render();
+                    return { ok: true, adopted: true };
+                }
+                return { ok: true, adopted: false };
+            } catch(e) {
+                console.log("Descarga pasiva amortiguada.");
+                return { ok: false, error: e.message };
+            } finally {
+                isSyncingLock = false;
+                if(syncBtn) syncBtn.classList.remove('spinning');
+                updateSyncStatus();
+            }
+        }
+
+        async function autoPushToCloud(bypassLock = false, skipConflictCheck = false) {
+            if(isSyncingLock && !bypassLock) return { ok: false };
+            const creds = getSyncCredentials();
+            if(!creds.token || !creds.gistId) return { ok: false, noCreds: true };
+            isSyncingLock = true;
+            const syncBtn = document.getElementById('btnCloudSync');
+            if(syncBtn) syncBtn.classList.add('spinning');
+            try {
+                // Chequeo de conflicto: si alguien pusheó algo que todavía no vimos, no lo pisamos a ciegas.
+                if(!skipConflictCheck) {
+                    try {
+                        const checkRes = await fetch(`https://api.github.com/gists/${creds.gistId}?_cb=${Date.now()}`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `token ${creds.token}` }
+                        });
+                        if(checkRes.ok) {
+                            const checkData = await checkRes.json();
+                            if(checkData.files && checkData.files["travel_timeline.json"]) {
+                                const cloudNow = JSON.parse(checkData.files["travel_timeline.json"].content);
+                                const cloudNowUpdatedAt = cloudNow.updatedAt || 0;
+                                if(cloudNowUpdatedAt > lastKnownCloudUpdatedAt && cloudNowUpdatedAt !== globalState.updatedAt) {
+                                    return { ok: false, conflict: true };
+                                }
+                            }
+                        }
+                    } catch(e) { /* si falla el chequeo, intentamos subir igual */ }
+                }
+
+                const res = await fetch(`https://api.github.com/gists/${creds.gistId}`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Authorization': `token ${creds.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: { "travel_timeline.json": { content: JSON.stringify(globalState, null, 2) } }
+                    })
+                });
+                if(!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+                lastKnownCloudUpdatedAt = globalState.updatedAt;
+                return { ok: true };
             } catch(e) { 
-                console.log("Push de datos interceptado (Offline)."); 
-            } finally { isSyncingLock = false; if(syncBtn) syncBtn.classList.remove('spinning'); }
+                console.log("Escritura pasiva amortiguada.");
+                return { ok: false, error: e.message };
+            } finally { 
+                isSyncingLock = false;
+                if(syncBtn) syncBtn.classList.remove('spinning'); 
+                updateSyncStatus();
+            }
         }
 
         async function manualSync() {
             const creds = getSyncCredentials();
-            if(!creds.token || !creds.gistId) { forceSetupCredentials(); return; }
-            await autoPullFromCloud(true);
-            await autoPushToCloud(true);
-            alert("🔄 Sincronización con GitHub completada.");
+            if(!creds.token || !creds.gistId) {
+                await forceSetupCredentials();
+                return;
+            }
+            clearTimeout(pushDebounceTimer);
+            const pullResult = await autoPullFromCloud(true);
+            if(!pullResult.ok) {
+                lastSyncHadError = true;
+                updateSyncStatus();
+                toast(`❌ No se pudo sincronizar (falló la descarga: ${pullResult.error || 'error de red'}).`, 'error');
+                return;
+            }
+            if(pullResult.adopted) {
+                lastSyncHadError = false;
+                toast('☁️ Se encontró una versión más reciente en la nube y se cargó localmente.', 'info', 4000);
+                return;
+            }
+            const pushResult = await autoPushToCloud(true, true);
+            if(!pushResult.ok) {
+                lastSyncHadError = true;
+                updateSyncStatus();
+                toast(`❌ No se pudo subir tu itinerario a la nube (${pushResult.error || 'error de red'}).`, 'error');
+                return;
+            }
+            hasUnsyncedChanges = false;
+            lastSyncHadError = false;
+            updateSyncStatus();
+            toast('🔄 Itinerario sincronizado con éxito.', 'success');
         }
 
-        function populateTaxonomies() {
-            const genres = new Set();
-            const disks = new Set();
-            state.movies.forEach(m => {
-                const diskName = m.disk ? m.disk.trim() : "Adata";
-                disks.add(diskName);
+        function buildMilestoneCardHtml(milestone) {
+            let checklistHtml = '';
+            if(milestone.checklist && milestone.checklist.length > 0) {
+                const itemsHtml = milestone.checklist.map((task, idx) => `
+                    <div class="task-item ${task.done ? 'done' : ''}" onclick="toggleTask('${milestone.id}', ${idx})">
+                        <div class="task-checkbox">
+                            <svg class="task-checkmark" viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
+                        </div>
+                        <span>${escapeHtml(task.text)}</span>
+                    </div>
+                `).join('');
+                checklistHtml = `<div class="subchecklist-box">${itemsHtml}</div>`;
+            }
 
-                if(m.meta && m.meta !== "Desconocido") {
-                    const genreChunk = m.meta.split('·')[0];
-                    genreChunk.split(',').forEach(g => {
-                        if(g.trim()) genres.add(g.trim());
-                    });
-                }
-            });
+            const notesText = milestone.notes || '';
+            let waButtonHtml = '';
+            const waMatch = notesText.match(/\+1\s?\(?\d{3}\)?\s?\d{3}-?\d{4}/) || notesText.match(/\+\d{10,13}/);
+            if (waMatch) {
+                const cleanNum = waMatch[0].replace(/[^0-9+]/g, '');
+                waButtonHtml = `<a href="https://wa.me/${cleanNum}" target="_blank" class="btn-wa-link">📱 WA</a>`;
+            }
 
-            const gSel = document.getElementById('filtGenre');
-            const prevG = gSel.value;
-            gSel.innerHTML = '<option value="">Cualquier Género</option>' + [...genres].sort().map(g => `<option value="${g}">${g}</option>`).join('');
-            if([...genres].includes(prevG)) gSel.value = prevG;
+            /* 📍 BOTÓN DE GOOGLE MAPS CORREGIDO CON STRING INTERPOLATION EN PARSEO SEGURO */
+            let mapButtonHtml = '';
+            if (milestone.address && milestone.address.trim() !== '') {
+                mapButtonHtml = `<a href="https://maps.google.com/?q=${encodeURIComponent(milestone.address)}" target="_blank" class="btn-map-link">📍 Ver Mapa</a>`;
+            }
 
-            const dSel = document.getElementById('filtDisk');
-            const prevD = dSel.value;
-            dSel.innerHTML = '<option value="">Cualquier Disco</option>' + [...disks].sort().map(d => `<option value="${d}">💾 ${d}</option>`).join('');
-            if([...disks].includes(prevD)) dSel.value = prevD;
+            const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
+            const costHtml = hasPay 
+                ? `<div style="font-size: 0.74rem; color:var(--orange); font-weight:700; background: var(--surface2); padding: 0.35rem 0.55rem; border-radius: 6px; display: inline-block;">💰 A pagar allá: USD ${milestone.cost.toLocaleString('en-US')}</div>` 
+                : '';
+
+            let notesHtml = '';
+            if (notesText.trim() || milestone.image || milestone.address) {
+                notesHtml = `
+                    <details class="notes-dropdown">
+                        <summary class="notes-summary">📝 Ver Notas / Adjunto</summary>
+                        <div class="notes-content">
+                            ${notesText ? `<p style="margin-bottom: 0.4rem;">${escapeHtml(notesText)}</p>` : ''}
+                            ${milestone.address ? `<p style="margin-bottom: 0.4rem; color:var(--teal);">📍 <b>Ubicación:</b> ${escapeHtml(milestone.address)}</p>` : ''}
+                            ${milestone.image ? `<div style="text-align:center; margin-top:0.4rem;"><img src="${milestone.image}" style="max-width:100%; border-radius:8px; border:1px solid var(--surface3);" alt="Comprobante"></div>` : ''}
+                        </div>
+                    </details>
+                `;
+            } else {
+                notesHtml = `
+                    <div class="notes-dropdown dimmed-dropdown">
+                        <span class="notes-summary">📝 Sin notas ni adjuntos</span>
+                    </div>
+                `;
+            }
+
+            const googleCalUrl = getGoogleCalendarUrl(milestone);
+
+            const typeLabels = {
+                flight: "✈️ Vuelo",
+                hotel: "🏨 Alojamiento",
+                transfer: "🚗 Traslado",
+                pass: "🎫 Pase",
+                custom: "📌 Recordatorio"
+            };
+            const displayType = typeLabels[milestone.type] || milestone.type;
+
+            return `
+                <div class="card-meta-row">
+                    <span class="datetime-stamp">${formatDisplayDate(milestone.date)} — ${milestone.time} hs</span>
+                    <span class="type-badge">${displayType}</span>
+                </div>
+                <div class="card-title-row">
+                    <button class="btn-milestone-check" onclick="toggleMilestonePassed('${milestone.id}')" title="Marcar como completado">
+                        <svg viewBox="0 0 10 10"><path d="M2 5l2 2 4-4" fill="none" stroke="white" stroke-width="2"/></svg>
+                    </button>
+                    <div style="min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div class="card-main-title">${escapeHtml(milestone.title)}</div>
+                        ${milestone.code ? `<div><span class="res-code">${escapeHtml(milestone.code)}</span></div>` : ''}
+                    </div>
+                </div>
+                
+                ${costHtml}
+                ${notesHtml}
+
+                <div class="subchecklist-box" onclick="event.stopPropagation()">
+                    <div class="subchecklist-title">
+                        <span>Dependencias / Checklist</span>
+                        <span>${milestone.checklist ? milestone.checklist.filter(c=>c.done).length : 0}/${milestone.checklist ? milestone.checklist.length : 0}</span>
+                    </div>
+                    ${checklistHtml}
+                    <div class="add-task-inline">
+                        <input type="text" id="input_add_${milestone.id}" placeholder="Añadir pendiente..." onkeypress="addTaskInline(event, '${milestone.id}')">
+                        <button onclick="addTaskInline(event, '${milestone.id}')">＋</button>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    ${waButtonHtml}
+                    ${mapButtonHtml}
+                    <a href="${googleCalUrl}" target="_blank" class="btn-action-small" style="color:var(--teal); text-decoration:none; font-weight:600;">📅 Google Cal</a>
+                    <button class="btn-action-small" onclick="openEditModal('${milestone.id}')">✏️ Editar</button>
+                    <button class="btn-action-small" onclick="shareWhatsApp('${milestone.id}')">Compartir</button>
+                    <button class="btn-action-small delete-trigger" onclick="deleteMilestone('${milestone.id}')">Eliminar</button>
+                </div>
+            `;
         }
 
         function render() {
-            const grid = document.getElementById('catalogGrid');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const sortOp = document.getElementById('sortSelect').value;
+            const trip = getActiveTrip();
+
+            const select = document.getElementById('tripSelector');
+            select.innerHTML = globalState.trips.map(t => `<option value="${t.id}" ${t.id === globalState.activeTripId ? 'selected' : ''}>📌 ${escapeHtml(t.name)}</option>`).join('');
+
+            document.getElementById('insProvider').textContent = trip.insurance.provider || "Sin registrar";
+            document.getElementById('insCoverage').textContent = trip.insurance.coverage || "Sin registrar";
+            document.getElementById('insNotes').textContent = trip.insurance.notes || "No hay observaciones extras.";
+
+            const cardBox = document.getElementById('vipCardsContainer');
+            cardBox.innerHTML = trip.cards.map(c => `
+                <div class="card-row-item">
+                    <span class="card-row-name">💳 ${escapeHtml(c.name)}</span>
+                    <div class="card-row-controls">
+                        <button class="btn-counter-small" onclick="updateCardCounter('${c.id}', -1)">-</button>
+                        <span class="card-row-counter">${c.passes}</span>
+                        <button class="btn-counter-small" onclick="updateCardCounter('${c.id}', 1)">+</button>
+                        <button class="btn-counter-small" style="background:rgba(255,69,58,0.12); color:var(--red);" onclick="deleteCardInline('${c.id}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('') + `<button class="btn-add-card-inline" onclick="addNewCardInline()">＋ Enlazar nueva tarjeta / pase</button>`;
+
+            trip.milestones.sort((a, b) => (a.date + 'T' + a.time).localeCompare(b.date + 'T' + b.time));
+
+            const activeContainer = document.getElementById('activeTimelineContainer');
+            const historyContainer = document.getElementById('historyTimelineContainer');
             
-            const genre = document.getElementById('filtGenre').value;
-            const location = document.getElementById('filtLocation').value;
-            const disk = document.getElementById('filtDisk').value;
-            const type = document.getElementById('filtType').value;
-            const watched = document.getElementById('filtWatched').value;
-            const shortlist = document.getElementById('filtShortlist').value;
-            
-            grid.innerHTML = '';
-            
-            let filtered = state.movies.filter(m => {
-                const mDisk = m.disk ? m.disk.trim() : "Adata";
-                if(disk && mDisk !== disk) return false;
-                if(location && m.category !== location) return false;
-                if(type && m.type !== type) return false;
-                if(genre && (!m.meta || !m.meta.includes(genre))) return false;
-                if(watched !== "") {
-                    const isW = !!m.watched;
-                    if(String(isW) !== watched) return false;
-                }
-                if(shortlist === "true" && !m.shortlisted) return false;
-                if(search && !(m.title.toLowerCase().includes(search) || (m.meta && m.meta.toLowerCase().includes(search)))) return false;
-                return true;
-            });
+            activeContainer.innerHTML = '';
+            historyContainer.innerHTML = '';
 
-            const getSafeNumber = (val) => isNaN(parseFloat(val)) ? 0 : parseFloat(val);
+            let totalPendingPay = 0;
+            let activeCount = 0;
+            let historyCount = 0;
 
-            if (sortOp === 'year_desc') {
-                filtered.sort((a,b) => getSafeNumber(b.year) - getSafeNumber(a.year));
-            } else if (sortOp === 'year_asc') {
-                filtered.sort((a,b) => getSafeNumber(a.year) - getSafeNumber(b.year));
-            } else if (sortOp === 'title_az') {
-                filtered.sort((a,b) => a.title.localeCompare(b.title));
-            } else if (sortOp === 'rating_desc') {
-                filtered.sort((a,b) => getSafeNumber(b.rating) - getSafeNumber(a.rating));
-            } else {
-                filtered.sort((a,b) => b.id.localeCompare(a.id));
-            }
+            trip.milestones.forEach((milestone) => {
+                if(!milestone.address && milestone.type === 'hotel' && milestone.id === 'm5') milestone.address = "Bayahibe Highway, Bayahibe 23000";
+                if(!milestone.address && milestone.type === 'hotel' && milestone.id === 'm7') milestone.address = "Av. Vitacura 2610, Las Condes, Santiago";
 
-            if(filtered.length === 0) {
-                grid.innerHTML = '<div class="empty-state">No se encontraron títulos en tu catálogo. Añadí uno arriba.</div>';
-                return;
-            }
-
-            filtered.forEach(m => {
                 const card = document.createElement('div');
-                card.className = `movie-card ${m.watched ? 'is-watched' : ''}`;
-                
-                const imdbLink = m.imdbID ? `https://www.imdb.com/title/${m.imdbID}/` : `https://www.imdb.com/find/?q=${encodeURIComponent(m.title)}`;
-                const posterStyle = m.poster ? '' : 'style="display:flex;align-items:center;justify-content:center;background:#2c2c2e;height:100%;font-size:3rem;padding:2.5rem 0;"';
-                const posterHtml = m.poster 
-                    ? `<img src="${m.poster}" class="poster-img" alt="Poster" onerror="this.style.display='none'; this.parentElement.innerHTML='🎬';">`
-                    : `🎬`;
-                
-                const diskLabel = m.disk ? m.disk.trim() : 'Adata';
-                const locLabel = m.category === 'all' ? 'Raíz' : m.category;
-                const typeLabel = m.type || 'Película';
+                card.className = `timeline-card is-${milestone.type} ${milestone.passed ? 'passed-milestone' : ''}`;
+                card.innerHTML = buildMilestoneCardHtml(milestone);
 
-                let seriesBadge = "";
-                if(m.type === "Serie" && m.seriesInfo) {
-                    seriesBadge = `<div style="font-size:0.65rem; color:var(--accent); font-weight:700; margin-top:0.2rem;">📺 ${m.seriesInfo}</div>`;
+                const hasPay = milestone.hasPayment !== undefined ? milestone.hasPayment : (milestone.cost > 0);
+
+                if (!milestone.passed) {
+                    if (hasPay) totalPendingPay += milestone.cost;
+                    activeContainer.appendChild(card);
+                    activeCount++;
+                } else {
+                    historyContainer.appendChild(card);
+                    historyCount++;
                 }
-
-                card.innerHTML = `
-                    <div class="poster-wrapper" ${posterStyle} onclick="window.open('${imdbLink}', '_blank')" title="Abrir en IMDb">
-                        ${posterHtml}
-                        ${m.shortlisted ? '<div class="shortlist-badge">📌 PRÓXIMA</div>' : ''}
-                        <div class="folder-badge">💾 ${diskLabel} · ${locLabel} · ${typeLabel}</div>
-                        ${m.rating && m.rating !== "0.0" ? `<div class="rating-badge">⭐ ${m.rating}</div>` : ''}
-                        ${m.watched ? '<div class="watched-badge">✅ VISTA</div>' : ''}
-                    </div>
-                    <div class="movie-info">
-                        <div class="movie-title">${m.title}</div>
-                        <div class="movie-meta">${m.year} · ${m.meta.split('·')[0]}</div>
-                        ${seriesBadge}
-                        <div class="movie-plot">${m.plot}</div>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-card ${m.watched ? 'action' : ''}" onclick="toggleWatched('${m.id}')">${m.watched ? 'No Vista' : '✅ Vista'}</button>
-                        <button class="btn-card" onclick="toggleShortlist('${m.id}')" style="color: ${m.shortlisted ? 'var(--accent)' : 'inherit'}">${m.shortlisted ? 'Quitar 📌' : '📌 Próxima'}</button>
-                        ${m.type === 'Serie' ? `<button class="btn-card success" onclick="showSeriesDetails('${m.id}')">Episodios</button>` : `<button class="btn-card" onclick="editMovieInline('${m.id}')">Editar</button>`}
-                        <button class="btn-card del" onclick="deleteMovie('${m.id}')">Quitar del Catálogo</button>
-                    </div>
-                `;
-                grid.appendChild(card);
             });
+
+            if(activeCount === 0) activeContainer.innerHTML = `<div class="empty-state">No hay hitos activos en el horizonte.</div>`;
+            if(historyCount === 0) historyContainer.innerHTML = `<div class="empty-state">No archivaste hitos en este viaje todavía.</div>`;
+
+            document.getElementById('valPendingPay').textContent = `USD ${totalPendingPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            updateStorageBar();
+            updateSyncStatus();
         }
 
         window.onload = function() {
-            populateTaxonomies();
+            getSyncCredentials(); 
             render();
-            setTimeout(() => { autoPullFromCloud(); }, 150);
+            setTimeout(() => {
+                autoPullFromCloud();
+            }, 100);
         };
 
         document.addEventListener("visibilitychange", async () => {
